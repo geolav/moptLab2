@@ -1,6 +1,9 @@
-from core.result import OptResult
-from core.counter import CallCounter
-from core.constants import MAX_ITER
+import numpy as np
+from typing import Callable
+from ..utils import OptResult, CallCounter
+
+MAX_ITER = 100_000
+
 
 def gradient_descent_const(
     f: Callable, grad: Callable,
@@ -21,6 +24,6 @@ def gradient_descent_const(
             return OptResult(x, cf(x), k, cf.count, cg.count, True, traj)
         x = x - alpha * g
         traj.append(x.copy())
-        cf(x)  # один вызов f для контроля значения
+        cf(x)
 
     return OptResult(x, cf(x), max_iter, cf.count, cg.count, False, traj)

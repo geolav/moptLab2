@@ -1,0 +1,46 @@
+import numpy as np
+from typing import Callable, Optional
+from scipy.optimize import minimize_scalar
+from ..utils import OptResult, CallCounter
+
+MAX_ITER = 100_000
+
+
+def gradient_descent_steepest(
+    f: Callable, grad: Callable,
+    x0: np.ndarray,
+    A: Optional[np.ndarray] = None,
+    eps: float = 1e-8,
+    max_iter: int = MAX_ITER
+) -> OptResult:
+    """Метод наискорейшего градиентного спуска.
+    Если A задана — используем аналитическую формулу для квадратичных функций.
+    Иначе — одномерная минимизация через scipy.
+    """
+    cf = CallCounter(f)
+    cg = CallCounter(grad)
+
+    x = x0.copy().astype(float)
+    traj = [x.copy()]
+
+    for k in range(max_iter):
+        g = cg(x)
+        if np.linalg.norm(g) < eps:
+            return OptResult(x, cf(x), k, cf.count, cg.count, True, traj)
+
+        if A is not None:
+            # Аналитически для квадратичной: α* = ‖g‖²/(gᵀAg)
+            denom = g @ A @ g
+            alpha = (g @ g) / denom if denom > 1e-16 else 1e-4
+        else:
+            # Численная одномерная минимизация
+            def phi(a):
+                val = cf(x - a * g)
+                return val
+            res = minimize_scalar(phi, bounds=(0, 10), method='bounded')
+            alpha = res.x
+
+        x = x - alpha * g
+        traj.append(x.copy())
+
+    return OptResult(x, cf(x), max_iter, cf.count, cg.count, False, traj)
