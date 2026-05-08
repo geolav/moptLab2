@@ -1,0 +1,755 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T2A]{fontenc}
+\usepackage[russian]{babel}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{geometry}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning}
+
+\geometry{left=2.5cm, right=2cm, top=2cm, bottom=2cm}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!70!black,
+    urlcolor=blue!70!black,
+    citecolor=red!70!black
+}
+
+\title{
+    \textbf{Лабораторная работа 2}\\
+    \large Градиентный спуск: классика\\
+    \normalsize Методы оптимизации (КТ'26)
+}
+\author{}
+\date{\today}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\norm}[1]{\left\|#1\right\|}
+\newcommand{\grad}{\nabla}
+\newcommand{\eps}{\varepsilon}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Определение}[section]
+\newtheorem{theorem}{Теорема}[section]
+\newtheorem{remark}{Замечание}[section]
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+% ═════════════════════════════════════════════════════════════
+\section{Постановка задачи}
+% ═════════════════════════════════════════════════════════════
+
+Рассматривается задача безусловной минимизации:
+\[
+    \min_{x \in \R^n} f(x),
+\]
+где $f \colon \R^n \to \R$ — дифференцируемая функция.
+
+В данной работе реализованы и исследованы четыре варианта градиентного спуска:
+\begin{enumerate}
+    \item градиентный спуск с постоянным шагом;
+    \item градиентный спуск с дроблением шага (условие Армихо);
+    \item градиентный спуск с дроблением шага (сильные условия Вольфе);
+    \item метод наискорейшего градиентного спуска.
+\end{enumerate}
+
+% ═════════════════════════════════════════════════════════════
+\section{Описание методов}
+% ═════════════════════════════════════════════════════════════
+
+\subsection{Общая схема градиентного спуска}
+
+Все рассматриваемые методы имеют общую итерационную структуру:
+\begin{equation}
+    \label{eq:gd_update}
+    x_{k+1} = x_k - \alpha_k \, \grad f(x_k),
+\end{equation}
+где $\alpha_k > 0$ — \emph{длина шага} на $k$-й итерации,
+$\grad f(x_k)$ — градиент $f$ в точке $x_k$.
+
+\begin{definition}[Направление антиградиента]
+    Вектор $d_k = -\grad f(x_k)$ называется \emph{направлением наискорейшего убывания}
+    функции $f$ в точке $x_k$, так как
+    $\displaystyle\lim_{\alpha \to 0^+} \frac{f(x_k + \alpha d_k) - f(x_k)}{\alpha}
+    = -\norm{\grad f(x_k)}^2 \leq 0$.
+\end{definition}
+
+Критерий остановки во всех экспериментах:
+\[
+    \norm{\grad f(x_k)} < \eps.
+\]
+
+\subsection{Метод 1: Постоянный шаг}
+
+\begin{definition}[Константа Липшица градиента]
+    Функция $f$ имеет $L$-\emph{гладкий градиент}, если
+    \[
+        \norm{\grad f(x) - \grad f(y)} \leq L\norm{x - y}
+        \quad \forall x, y \in \R^n.
+    \]
+\end{definition}
+
+\begin{theorem}[Сходимость при постоянном шаге]
+    Пусть $f$ выпукла и $L$-гладка. Тогда метод~\eqref{eq:gd_update}
+    с постоянным шагом $\alpha \in (0, 2/L)$ сходится, причём
+    \[
+        f(x_k) - f(x^*) \leq \frac{L\norm{x_0 - x^*}^2}{2}\cdot(1 - \alpha L)^k.
+    \]
+    При сильной выпуклости с константой $\mu > 0$ сходимость геометрическая.
+\end{theorem}
+
+\begin{remark}
+    Для квадратичной функции $f(x) = \tfrac{1}{2}x^\top A x$ с $A \succ 0$
+    константа $L = \lambda_{\max}(A)$.
+    \textbf{Оптимальный шаг}:
+    \[
+        \alpha^* = \frac{2}{\lambda_{\min}(A) + \lambda_{\max}(A)},
+        \qquad
+        \rho = \left(\frac{\kappa - 1}{\kappa + 1}\right)^2,
+    \]
+    где $\kappa = \lambda_{\max}/\lambda_{\min}$ — число обусловленности.
+    Число итераций оценивается как $k \geq \tfrac{\kappa}{2}\ln\tfrac{\norm{x_0-x^*}}{\eps}$.
+\end{remark}
+
+\subsection{Метод 2: Дробление шага с условием Армихо}
+
+Выбирается $\alpha_k = \beta^{m_k}\alpha_0$, где $m_k$ — наименьшее целое,
+при котором выполнено \textbf{условие достаточного убывания (Армихо)}:
+\begin{equation}
+    \label{eq:armijo}
+    f(x_k - \alpha \, \grad f(x_k)) \leq f(x_k) - c_1 \,\alpha\, \norm{\grad f(x_k)}^2,
+\end{equation}
+где $c_1 \in (0, 1)$ (типично $c_1 = 10^{-4}$), $\beta \in (0,1)$ (типично $\beta = 0.5$).
+
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+    \draw[->] (-0.3,0) -- (5.5,0) node[right] {$\alpha$};
+    \draw[->] (0,-0.3) -- (0,3.2) node[above] {$\phi(\alpha)$};
+    \draw[blue, thick, domain=0:5, samples=100]
+        plot(\x, {2.5 - 1.5*\x + 0.4*\x^2}) node[right] {$\phi(\alpha)$};
+    \draw[red, dashed, domain=0:3.5]
+        plot(\x, {2.5 - 0.4*\x}) node[right] {$\phi(0)-c_1\alpha\norm{g}^2$};
+    \filldraw[green!60!black] (1.2, {2.5 - 1.5*1.2 + 0.4*1.2^2}) circle (3pt)
+        node[above right, black] {принятый $\alpha$};
+\end{tikzpicture}
+\end{center}
+
+\begin{algorithm}
+\caption{Дробление шага (Армихо)}
+\begin{algorithmic}[1]
+\State \textbf{Вход:} $x_k$, $\alpha_0 > 0$, $c_1 \in (0,1)$, $\beta \in (0,1)$
+\State $g \leftarrow \grad f(x_k)$, $\alpha \leftarrow \alpha_0$
+\While{$f(x_k - \alpha g) > f(x_k) - c_1\,\alpha\,\norm{g}^2$}
+    \State $\alpha \leftarrow \beta \cdot \alpha$
+\EndWhile
+\State \textbf{Выход:} $\alpha_k = \alpha$
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Метод 3: Дробление шага с сильными условиями Вольфе}
+
+\textbf{Условие 1 (Армихо):}
+\[
+    f(x_k + \alpha d_k) \leq f(x_k) + c_1\,\alpha\,\grad f(x_k)^\top d_k,
+    \quad d_k = -\grad f(x_k).
+\]
+
+\textbf{Условие 2 (кривизны):}
+\[
+    \left|\grad f(x_k + \alpha d_k)^\top d_k\right|
+    \leq c_2\,\left|\grad f(x_k)^\top d_k\right|,
+    \quad 0 < c_1 < c_2 < 1.
+\]
+
+\begin{remark}
+    Условие кривизны запрещает шаг слишком малым: требуется, чтобы
+    $|\phi'(\alpha)|$ уменьшилось относительно $|\phi'(0)|$.
+    Это удерживает $\alpha$ вблизи локального минимума функции $\phi(\alpha) = f(x_k + \alpha d_k)$.
+\end{remark}
+
+\begin{theorem}[Существование шага Вольфе]
+    Если $f$ ограничена снизу, непрерывно дифференцируема и $\grad f(x_k)^\top d_k < 0$,
+    то существует $\alpha > 0$, удовлетворяющий сильным условиям Вольфе.
+\end{theorem}
+
+\subsection{Метод 4: Метод наискорейшего спуска}
+
+Шаг выбирается как точный минимум вдоль антиградиента:
+\begin{equation}
+    \label{eq:steepest}
+    \alpha_k = \arg\min_{\alpha > 0} f\!\left(x_k - \alpha\,\grad f(x_k)\right).
+\end{equation}
+
+\paragraph{Аналитическая формула для квадратичных функций.}
+Для $f(x) = \tfrac{1}{2} x^\top A x$ ($A \succ 0$), $g_k = \grad f(x_k) = Ax_k$:
+\begin{equation}
+    \label{eq:optimal_alpha_quad}
+    \boxed{\alpha_k^* = \frac{\norm{g_k}^2}{g_k^\top A g_k}.}
+\end{equation}
+
+\begin{theorem}[Сходимость наискорейшего спуска]
+    Для $f(x) = \tfrac{1}{2}x^\top A x$:
+    \[
+        \norm{x_k - x^*}_A \leq \left(\frac{\kappa - 1}{\kappa + 1}\right)^k \norm{x_0 - x^*}_A.
+    \]
+    Последовательные градиенты ортогональны: $g_{k+1} \perp g_k$,
+    что при большом $\kappa$ порождает зигзагообразные траектории.
+\end{theorem}
+
+% ═════════════════════════════════════════════════════════════
+\section{Тестовые функции}
+% ═════════════════════════════════════════════════════════════
+
+\subsection{Квадратичные функции}
+
+\subsubsection{\texorpdfstring{Хорошо обусловленная ($\kappa = 1$)}{Хорошо обусловленная (k=1)}}
+\[
+    f(x, y) = x^2 + y^2,
+    \quad
+    A = \begin{pmatrix} 2 & 0 \\ 0 & 2 \end{pmatrix},
+    \quad \kappa(A) = 1,
+    \quad x^* = (0,0).
+\]
+Линии уровня — концентрические окружности. Допустимый диапазон шагов: $\alpha \in (0, 1)$.
+
+\subsubsection{\texorpdfstring{Плохо обусловленная ($\kappa = 100$)}{Плохо обусловленная (k=100)}}
+\[
+    g(x, y) = 50x^2 + \tfrac{1}{2}y^2,
+    \quad
+    A = \begin{pmatrix} 100 & 0 \\ 0 & 1 \end{pmatrix},
+    \quad \kappa(A) = 100,
+    \quad x^* = (0,0).
+\]
+Линии уровня — вытянутые эллипсы. Допустимый диапазон: $\alpha \in (0, 0.02)$.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \includegraphics[width=\textwidth]{fig_surface_well.png}
+        \caption{Поверхность $f(x,y)=x^2+y^2$}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \includegraphics[width=\textwidth]{fig_surface_ill.png}
+        \caption{Поверхность $g(x,y)=50x^2+0.5y^2$}
+    \end{subfigure}
+    \caption{3D-поверхности квадратичных функций. Слева — сферический параболоид ($\kappa=1$),
+    справа — вытянутый параболоид ($\kappa=100$).}
+    \label{fig:quad_surfaces}
+\end{figure}
+
+\subsection{Функция Розенброка}
+\[
+    f_R(x, y) = (1 - x)^2 + 100(y - x^2)^2.
+\]
+Глобальный минимум: $x^* = (1, 1)$, $f_R(x^*)=0$.
+Гессиан в минимуме: $\kappa(H_{f_R}(1,1)) \approx 2500$.
+Функция известна своей узкой параболической долиной («бананом»).
+
+Градиент:
+\[
+    \frac{\partial f_R}{\partial x} = -2(1-x) - 400x(y-x^2),
+    \qquad
+    \frac{\partial f_R}{\partial y} = 200(y-x^2).
+\]
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.55\textwidth]{fig_surface_Ros.png}
+    \caption{Поверхность функции Розенброка. Минимум в точке $(1,1)$ находится
+    на дне узкой параболической долины.}
+    \label{fig:ros_surface}
+\end{figure}
+
+\subsection{Функция Экли}
+\[
+    f_A(x,y) = -20\exp\!\left(-0.2\sqrt{\tfrac{x^2+y^2}{2}}\right)
+    -\exp\!\left(\tfrac{\cos 2\pi x + \cos 2\pi y}{2}\right) + e + 20.
+\]
+Глобальный минимум: $x^* = (0, 0)$, $f_A(x^*)=0$.
+Многоэкстремальная: бесчисленное множество локальных минимумов на «ребристых» кольцах.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.55\textwidth]{fig_surface_Ack.png}
+    \caption{Поверхность функции Экли. Хорошо видна периодическая структура
+    локальных минимумов вокруг глобального минимума в начале координат.}
+    \label{fig:ack_surface}
+\end{figure}
+
+\subsection{Функция Химмельблау}
+\[
+    f_H(x, y) = (x^2 + y - 11)^2 + (x + y^2 - 7)^2.
+\]
+Четыре равнозначных глобальных минимума:
+$x^*_1 = (3,2)$,
+$x^*_2 \approx (-2.805, 3.131)$,
+$x^*_3 \approx (-3.779, -3.283)$,
+$x^*_4 \approx (3.584, -1.848)$.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.55\textwidth]{fig_surface_Him.png}
+    \caption{Поверхность функции Химмельблау. Четыре симметричных «воронки» соответствуют
+    четырём глобальным минимумам функции.}
+    \label{fig:him_surface}
+\end{figure}
+
+% ═════════════════════════════════════════════════════════════
+\section{Экспериментальная часть}
+% ═════════════════════════════════════════════════════════════
+
+% ─────────────────────────────────────────────────────────────
+\subsection{Задание 1: Постоянный шаг на квадратичных функциях}
+% ─────────────────────────────────────────────────────────────
+
+Критерий остановки: $\norm{\grad f(x_k)} < 10^{-8}$.
+Стартовая точка: $x_0 = (2, 2)^\top$.
+
+\subsubsection{Хорошо обусловленная функция ($\kappa = 1$)}
+
+\begin{table}[H]
+\centering
+\caption{Число итераций от шага $\alpha$ для $f(x,y)=x^2+y^2$.}
+\label{tab:well_cond_step}
+\begin{tabular}{cccc}
+\toprule
+Шаг $\alpha$ & Итерации & $f(x^*)$ & Сошлось? \\
+\midrule
+0.001  & 10067 & $2.5 \times 10^{-17}$ & \checkmark \\
+0.010  & 998   & $2.5 \times 10^{-17}$ & \checkmark \\
+0.050  & 192   & $2.1 \times 10^{-17}$ & \checkmark \\
+0.100  & 91    & $1.8 \times 10^{-17}$ & \checkmark \\
+0.200  & 40    & $1.4 \times 10^{-17}$ & \checkmark \\
+\textbf{0.500}  & \textbf{1} & \textbf{0} & \checkmark \\
+0.900  & 91    & $1.8 \times 10^{-17}$ & \checkmark \\
+0.990  & 998   & $2.5 \times 10^{-17}$ & \checkmark \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Вывод.} Оптимальный шаг $\alpha^* = \frac{2}{\lambda_{\min}+\lambda_{\max}} = \frac{2}{2+2} = 0.5$
+обеспечивает сходимость за 1 итерацию — метод попадает в минимум точно.
+График числа итераций от шага имеет U-образную форму с минимумом в $\alpha=0.5$.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.65\textwidth]{fig_iter_vs_step_well.png}
+    \caption{Зависимость числа итераций от шага $\alpha$ для хорошо обусловленной
+    квадратичной функции. Минимум в точке $\alpha^*=0.5$.}
+    \label{fig:iter_step_well}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.65\textwidth]{fig_contour_const_well.png}
+    \caption{Траектория постоянного шага ($\alpha^*=0.5$) на линиях уровня
+    $f(x,y)=x^2+y^2$. Квадрат — стартовая точка, звезда — найденный минимум.
+    При $\kappa=1$ метод сходится за одну итерацию.}
+    \label{fig:contour_well}
+\end{figure}
+
+\subsubsection{Плохо обусловленная функция ($\kappa = 100$)}
+
+\begin{table}[H]
+\centering
+\caption{Число итераций от шага $\alpha$ для $g(x,y)=50x^2+0.5y^2$.}
+\label{tab:ill_cond_step}
+\begin{tabular}{cccc}
+\toprule
+Шаг $\alpha$ & Итерации & $f(x^*)$ & Сошлось? \\
+\midrule
+0.0001  & —     & $4.1 \times 10^{-9}$  & $\times$ (лимит) \\
+0.0010  & 19105 & $5.0 \times 10^{-17}$ & \checkmark \\
+0.0050  & 3814  & $5.0 \times 10^{-17}$ & \checkmark \\
+0.0100  & 1902  & $5.0 \times 10^{-17}$ & \checkmark \\
+0.0150  & 1265  & $5.0 \times 10^{-17}$ & \checkmark \\
+0.0190  & 997   & $4.9 \times 10^{-17}$ & \checkmark \\
+\textbf{0.0195}  & \textbf{971} & $4.9 \times 10^{-17}$ & \checkmark \\
+0.0199  & 2361  & $4.9 \times 10^{-19}$ & \checkmark \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Вывод.} Оптимальный шаг вблизи $\alpha^* = \frac{2}{100+1} \approx 0.0198$.
+При $\alpha=0.0199$ (вблизи границы устойчивости $2/L=0.02$) итераций больше, чем при
+$\alpha=0.0195$: метод начинает осциллировать вдоль оси $x$.
+При $\alpha=0.0001$ метод не успевает сойтись за 100\,000 итераций.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.65\textwidth]{fig_iter_vs_step_ill.png}
+    \caption{Зависимость числа итераций от шага $\alpha$ для плохо обусловленной
+    квадратичной функции. Минимум вблизи $\alpha^* \approx 0.0195$,
+    рост справа объясняется близостью к границе устойчивости.}
+    \label{fig:iter_step_ill}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.65\textwidth]{fig_contour_const_ill.png}
+    \caption{Траектория постоянного шага ($\alpha^*=0.0195$) на линиях уровня
+    $g(x,y)=50x^2+0.5y^2$. Видна характерная зигзагообразная траектория:
+    метод чередует большие шаги вдоль оси $y$ и маленькие вдоль оси $x$.}
+    \label{fig:contour_ill}
+\end{figure}
+
+% ─────────────────────────────────────────────────────────────
+\subsection{Задание 2: Постоянный шаг на сложных функциях}
+% ─────────────────────────────────────────────────────────────
+
+Стартовые точки: Розенброк $(-1,1)$, Экли $(1.5,1)$, Химмельблау $(0,0)$.
+
+\begin{table}[H]
+\centering
+\caption{Постоянный шаг на сложных функциях, $\eps=10^{-8}$.}
+\label{tab:complex_const}
+\begin{tabular}{lccccl}
+\toprule
+Функция & $\alpha$ & Итерации & $f(x^*)$ & $x^*$ & Сошлось? \\
+\midrule
+Розенброк & 0.100 & — (inf) & $\infty$ & diverged & $\times$ \\
+Розенброк & 0.010 & — (inf) & $\infty$ & diverged & $\times$ \\
+Розенброк & \textbf{0.001} & \textbf{43564} & $1.25\times10^{-16}$ & $(1.0000,1.0000)$ & \checkmark \\
+\midrule
+Экли & 0.100 & — (локал.) & 3.72 & $(-0.33, 0.44)$ & $\times$ \\
+Экли & \textbf{0.010} & \textbf{39} & 3.57 & $(0.97, 0.97)$ & \checkmark \\
+Экли & \textbf{0.001} & \textbf{480} & 3.57 & $(0.97, 0.97)$ & \checkmark \\
+\midrule
+Химмельблау & 0.100 & — (inf) & $\infty$ & diverged & $\times$ \\
+Химмельблау & \textbf{0.010} & \textbf{77} & $1.94\times10^{-18}$ & $(3.0000,2.0000)$ & \checkmark \\
+Химмельблау & \textbf{0.001} & \textbf{849} & $1.89\times10^{-18}$ & $(3.0000,2.0000)$ & \checkmark \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Комментарий к результатам.}
+\begin{itemize}
+    \item \textbf{Розенброк, $\alpha \geq 0.01$:} расходимость (inf/nan).
+    Градиент вблизи стартовой точки достигает значений $\sim 400$, поэтому
+    шаг $0.01$ даёт смещение $\sim 4$, откуда градиент ещё больше — и так до $\infty$.
+    Только $\alpha=0.001$ достаточно мал.
+    \item \textbf{Экли, $\alpha=0.1$:} метод остановился в локальном минимуме
+    ($f \approx 3.72 \neq 0$) — функция многоэкстремальна, критерий $\norm{\grad f}<\eps$
+    выполнился в нужной точке стационарности.
+    Экли при $\alpha \in \{0.01, 0.001\}$ тоже находит \emph{локальный} минимум
+    вблизи $(0.97, 0.97)$, не глобальный $(0,0)$.
+    \item \textbf{Химмельблау, $\alpha=0.1$:} аналогично Розенброку — взрыв градиента.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{fig_contour_complex_Ros.png}
+    \caption{Постоянный шаг на функции Розенброка.
+    $\alpha=0.1$ и $\alpha=0.01$ — расходимость.
+    $\alpha=0.001$ (голубой) — медленная сходимость вдоль параболической долины.}
+    \label{fig:complex_ros}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \includegraphics[width=\textwidth]{fig_contour_complex_Ack.png}
+        \caption{Функция Экли}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \includegraphics[width=\textwidth]{fig_contour_complex_Him.png}
+        \caption{Функция Химмельблау}
+    \end{subfigure}
+    \caption{Постоянный шаг на многоэкстремальных функциях.
+    Экли: большой шаг ($\alpha=0.1$) прыгает между ребристыми кольцами.
+    Химмельблау: $\alpha=0.01$ и $0.001$ сходятся к одному из четырёх минимумов.}
+    \label{fig:complex_ack_him}
+\end{figure}
+
+% ─────────────────────────────────────────────────────────────
+\subsection{Задание 4: Методы дробления шага — зависимость от точности}
+% ─────────────────────────────────────────────────────────────
+
+Исследуется зависимость числа итераций, вызовов $f$ и $\grad f$ от
+$\varepsilon \in \{10^{-1}, \ldots, 10^{-8}\}$, $x_0=(2,2)$.
+
+\subsubsection{Хорошо обусловленная квадратика ($\kappa=1$)}
+
+\begin{table}[H]
+\centering
+\caption{Армихо и Вольфе на хорошо обусловленной квадратике.}
+\label{tab:linesearch_well}
+\begin{tabular}{lcccc}
+\toprule
+Метод & $\varepsilon$ & Итерации & $f$-вызовы & $\grad$-вызовы \\
+\midrule
+Армихо & $10^{-1}$ & 1 & 4 & 2 \\
+Армихо & $10^{-4}$ & 1 & 4 & 2 \\
+Армихо & $10^{-8}$ & 1 & 4 & 2 \\
+\midrule
+Вольфе & $10^{-1}$ & 1 & 4 & 3 \\
+Вольфе & $10^{-4}$ & 1 & 4 & 3 \\
+Вольфе & $10^{-8}$ & 1 & 4 & 3 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Вывод.} Оба метода находят точный минимум за \textbf{1 итерацию}
+независимо от $\varepsilon$. Линейный поиск выбирает шаг $\alpha=0.5$ — точный
+оптимум для данной сферической квадратики.
+
+\subsubsection{Плохо обусловленная квадратика ($\kappa=100$)}
+
+\begin{table}[H]
+\centering
+\caption{Армихо и Вольфе на плохо обусловленной квадратике.}
+\label{tab:linesearch_ill}
+\begin{tabular}{lccccc}
+\toprule
+Метод & $\varepsilon$ & Итерации & $f$-вызовы & $\grad$-вызовы & $f(x^*)$ \\
+\midrule
+Армихо & $10^{-1}$ & 148  & 1127  & 149 & $2.97\times10^{-3}$ \\
+Армихо & $10^{-2}$ & 256  & 1946  & 257 & $2.35\times10^{-5}$ \\
+Армихо & $10^{-4}$ & 458  & 3478  & 459 & $2.76\times10^{-9}$ \\
+Армихо & $10^{-6}$ & 667  & 5063  & 668 & $2.36\times10^{-13}$ \\
+Армихо & $10^{-8}$ & 869  & 6595  & 870 & $2.77\times10^{-17}$ \\
+\midrule
+Вольфе & $10^{-1}$ & \textbf{3} & \textbf{18} & \textbf{7} & 0 \\
+Вольфе & $10^{-8}$ & \textbf{3} & \textbf{18} & \textbf{7} & 0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Вывод.} Разница между методами колоссальна:
+Армихо требует $\sim$870 итераций при $\eps=10^{-8}$,
+Вольфе — всего \textbf{3 итерации} при любом $\eps$.
+Условие кривизны в методе Вольфе выбирает шаг близкий к наискорейшему,
+что практически устраняет зигзагообразность на квадратиках.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{fig_eps_ill.png}
+    \caption{Зависимость числа итераций, вызовов $f$ и $\grad f$ от точности $\eps$
+    для плохо обусловленной квадратики.
+    Армихо (синий): линейный рост. Вольфе (оранжевый): константа~— 3 итерации.}
+    \label{fig:eps_ill}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \includegraphics[width=\textwidth]{fig_traj_linesearch_well.png}
+        \caption{Хорошо обусловленная ($\kappa=1$)}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \includegraphics[width=\textwidth]{fig_traj_linesearch_ill.png}
+        \caption{Плохо обусловленная ($\kappa=100$)}
+    \end{subfigure}
+    \caption{Траектории методов Армихо и Вольфе при $\eps=10^{-4}$.
+    Слева: оба метода за одну итерацию.
+    Справа: Вольфе (оранжевый) — три прямых прыжка, Армихо (красный) — сотни зигзагов.}
+    \label{fig:traj_linesearch}
+\end{figure}
+
+% ─────────────────────────────────────────────────────────────
+\subsection{Задание 5: Методы дробления шага на сложных функциях}
+% ─────────────────────────────────────────────────────────────
+
+Запуски из нескольких стартовых точек при $\eps=10^{-8}$.
+
+\begin{table}[H]
+\centering
+\caption{Розенброк: Армихо и Вольфе из разных стартовых точек.}
+\label{tab:complex5_ros}
+\begin{tabular}{lccccc}
+\toprule
+Метод & $x_0$ & Итерации & $f$-вызовы & $\grad$-вызовы & $f(x^*)$ \\
+\midrule
+Армихо & $(-1.0,\; 1.0)$ & & & & \\
+Вольфе & $(-1.0,\; 1.0)$ & & & & \\
+Армихо & $(\phantom{-}0.5, -0.5)$ & & & & \\
+Вольфе & $(\phantom{-}0.5, -0.5)$ & & & & \\
+Армихо & $(-1.5,\; 2.0)$ & & & & \\
+Вольфе & $(-1.5,\; 2.0)$ & & & & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Химмельблау: Армихо и Вольфе из разных стартовых точек.}
+\label{tab:complex5_him}
+\begin{tabular}{lccccc}
+\toprule
+Метод & $x_0$ & Итерации & $f$-вызовы & $\grad$-вызовы & $x^*$ \\
+\midrule
+Армихо & $(0.0,\; 0.0)$ & & & & \\
+Вольфе & $(0.0,\; 0.0)$ & & & & \\
+Армихо & $(-3.0,\; 3.0)$ & & & & \\
+Вольфе & $(-3.0,\; 3.0)$ & & & & \\
+Армихо & $(\phantom{-}3.0, -1.0)$ & & & & \\
+Вольфе & $(\phantom{-}3.0, -1.0)$ & & & & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent\textit{Таблицы заполняются числами из вывода программы.}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \includegraphics[width=\textwidth]{fig_complex_linesearch_Ros.png}
+        \caption{Розенброк}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \includegraphics[width=\textwidth]{fig_complex_linesearch_Him.png}
+        \caption{Химмельблау}
+    \end{subfigure}
+    \caption{Траектории Армихо и Вольфе из нескольких стартовых точек.
+    Розенброк: оба метода медленно ползут вдоль долины.
+    Химмельблау: в зависимости от стартовой точки метод сходится к разным из четырёх минимумов.}
+    \label{fig:complex5}
+\end{figure}
+
+% ─────────────────────────────────────────────────────────────
+\subsection{Задание 6: Метод наискорейшего градиентного спуска}
+% ─────────────────────────────────────────────────────────────
+
+\subsubsection{Квадратичные функции — зависимость от точности}
+
+\begin{table}[H]
+\centering
+\caption{Наискорейший спуск: хорошо обусловленная квадратика ($\kappa=1$).}
+\label{tab:steepest_well}
+\begin{tabular}{lcccc}
+\toprule
+$\varepsilon$ & Итерации & $f$-вызовы & $\grad$-вызовы & $f(x^*)$ \\
+\midrule
+$10^{-1}$ & 1 & 1 & 2 & $3.9\times10^{-31}$ \\
+$10^{-4}$ & 1 & 1 & 2 & $3.9\times10^{-31}$ \\
+$10^{-8}$ & 1 & 1 & 2 & $3.9\times10^{-31}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Наискорейший спуск: плохо обусловленная квадратика ($\kappa=100$).}
+\label{tab:steepest_ill}
+\begin{tabular}{lcccc}
+\toprule
+$\varepsilon$ & Итерации & $f$-вызовы & $\grad$-вызовы & $f(x^*)$ \\
+\midrule
+$10^{-1}$ & & & & \\
+$10^{-2}$ & & & & \\
+$10^{-4}$ & & & & \\
+$10^{-6}$ & & & & \\
+$10^{-8}$ & & & & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent\textit{Строки заполняются из вывода программы.}
+
+\paragraph{Вывод.}
+На $\kappa=1$ метод сходится за \textbf{1 итерацию} — аналитическая формула
+$\alpha^* = \norm{g}^2/(g^\top A g)$ даёт точный минимум.
+На $\kappa=100$ траектория зигзагообразна: $g_{k+1} \perp g_k$, прогресс
+вдоль длинной оси эллипса медленный.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{fig_eps_steepest_ill.png}
+    \caption{Зависимость числа итераций, вызовов $f$ и $\grad f$ от $\eps$
+    для наискорейшего спуска на плохо обусловленной квадратике.}
+    \label{fig:eps_steepest_ill}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \includegraphics[width=\textwidth]{fig_steepest_well.png}
+        \caption{Хорошо обусловленная ($\kappa=1$)}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \includegraphics[width=\textwidth]{fig_steepest_ill.png}
+        \caption{Плохо обусловленная ($\kappa=100$)}
+    \end{subfigure}
+    \caption{Траектории наискорейшего спуска на квадратичных функциях.
+    Слева: одна итерация до минимума.
+    Справа: классические ортогональные зигзаги вдоль вытянутого эллипса.}
+    \label{fig:steepest_quad}
+\end{figure}
+
+\subsubsection{Сложные функции}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \includegraphics[width=\textwidth]{fig_steepest_complex_Ros.png}
+        \caption{Розенброк}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \includegraphics[width=\textwidth]{fig_steepest_complex_Him.png}
+        \caption{Химмельблау}
+    \end{subfigure}
+    \caption{Траектории наискорейшего спуска из нескольких стартовых точек.
+    Розенброк: точная минимизация по шагу не помогает преодолеть узкую долину —
+    метод всё равно медленно ползёт.
+    Химмельблау: результат зависит от стартовой точки.}
+    \label{fig:steepest_complex}
+\end{figure}
+
+% ═════════════════════════════════════════════════════════════
+\section{Общие выводы}
+% ═════════════════════════════════════════════════════════════
+
+\begin{enumerate}
+    \item \textbf{Постоянный шаг.}
+    Прост в реализации, но требует ручного подбора $\alpha \in (0, 2/L)$.
+    Для хорошо обусловленных задач оптимальный шаг вычислим теоретически.
+    На плохо обусловленных ($\kappa \gg 1$) число итераций пропорционально $\kappa$.
+    На сложных функциях большие шаги приводят к расходимости из-за взрыва градиента.
+
+    \item \textbf{Число обусловленности $\kappa$} — главный параметр.
+    Постоянный шаг: $k \sim \mathcal{O}(\kappa)$.
+    Наискорейший спуск на квадратике: $k \sim \mathcal{O}(\kappa)$ из-за
+    зигзагообразности.
+    Методы с условиями Вольфе на квадратике: $k \sim \mathcal{O}(1)$ (!) за счёт
+    выбора шага близкого к оптимальному.
+
+    \item \textbf{Армихо vs Вольфе.}
+    Вольфе выигрывает в разы на плохо обусловленных задачах:
+    3 итерации против 869 при $\kappa=100$.
+    На хорошо обусловленных задачах разница незначительна.
+    Армихо проще в реализации, Вольфе надёжнее в сложных случаях.
+
+    \item \textbf{Наискорейший спуск.}
+    На квадратиках с $\kappa=1$ — оптимален (1 итерация).
+    На квадратиках с $\kappa=100$ — медленнее Вольфе: зигзагообразная траектория
+    из-за ортогональности последовательных градиентов.
+    На сложных функциях без аналитической формулы $\alpha^*$ требует численной
+    одномерной минимизации, что увеличивает число вызовов $f$.
+
+    \item \textbf{Многоэкстремальные функции.}
+    Градиентные методы первого порядка не гарантируют глобального минимума.
+    Результат принципиально зависит от стартовой точки.
+    Для борьбы с этим используют многократные перезапуски из разных точек.
+\end{enumerate}
+
+\end{document}
