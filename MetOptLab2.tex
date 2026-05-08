@@ -239,12 +239,12 @@ $\grad f(x_k)$ — градиент $f$ в точке $x_k$.
 \begin{figure}[H]
     \centering
     \begin{subfigure}[b]{0.48\textwidth}
-        \includegraphics[width=\textwidth]{fig_surface_well.png}
+        \includegraphics[width=\textwidth]{results/plots/fig_surface_well.png}
         \caption{Поверхность $f(x,y)=x^2+y^2$}
     \end{subfigure}
     \hfill
     \begin{subfigure}[b]{0.48\textwidth}
-        \includegraphics[width=\textwidth]{fig_surface_ill.png}
+        \includegraphics[width=\textwidth]{results/plots/fig_surface_ill.png}
         \caption{Поверхность $g(x,y)=50x^2+0.5y^2$}
     \end{subfigure}
     \caption{3D-поверхности квадратичных функций. Слева — сферический параболоид ($\kappa=1$),
@@ -269,7 +269,7 @@ $\grad f(x_k)$ — градиент $f$ в точке $x_k$.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.55\textwidth]{fig_surface_Ros.png}
+    \includegraphics[width=0.55\textwidth]{results/plots/fig_surface_Ros.png}
     \caption{Поверхность функции Розенброка. Минимум в точке $(1,1)$ находится
     на дне узкой параболической долины.}
     \label{fig:ros_surface}
@@ -285,7 +285,7 @@ $\grad f(x_k)$ — градиент $f$ в точке $x_k$.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.55\textwidth]{fig_surface_Ack.png}
+    \includegraphics[width=0.55\textwidth]{results/plots/fig_surface_Ack.png}
     \caption{Поверхность функции Экли. Хорошо видна периодическая структура
     локальных минимумов вокруг глобального минимума в начале координат.}
     \label{fig:ack_surface}
@@ -303,7 +303,7 @@ $x^*_4 \approx (3.584, -1.848)$.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.55\textwidth]{fig_surface_Him.png}
+    \includegraphics[width=0.55\textwidth]{results/plots/fig_surface_Him.png}
     \caption{Поверхность функции Химмельблау. Четыре симметричных «воронки» соответствуют
     четырём глобальным минимумам функции.}
     \label{fig:him_surface}
@@ -348,7 +348,7 @@ $x^*_4 \approx (3.584, -1.848)$.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.65\textwidth]{fig_iter_vs_step_well.png}
+    \includegraphics[width=0.65\textwidth]{results/plots/fig_iter_vs_step_well.png}
     \caption{Зависимость числа итераций от шага $\alpha$ для хорошо обусловленной
     квадратичной функции. Минимум в точке $\alpha^*=0.5$.}
     \label{fig:iter_step_well}
@@ -356,7 +356,7 @@ $x^*_4 \approx (3.584, -1.848)$.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.65\textwidth]{fig_contour_const_well.png}
+    \includegraphics[width=0.65\textwidth]{results/plots/fig_contour_const_well.png}
     \caption{Траектория постоянного шага ($\alpha^*=0.5$) на линиях уровня
     $f(x,y)=x^2+y^2$. Квадрат — стартовая точка, звезда — найденный минимум.
     При $\kappa=1$ метод сходится за одну итерацию.}
@@ -392,7 +392,7 @@ $\alpha=0.0195$: метод начинает осциллировать вдол
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.65\textwidth]{fig_iter_vs_step_ill.png}
+    \includegraphics[width=0.65\textwidth]{results/plots/fig_iter_vs_step_ill.png}
     \caption{Зависимость числа итераций от шага $\alpha$ для плохо обусловленной
     квадратичной функции. Минимум вблизи $\alpha^* \approx 0.0195$,
     рост справа объясняется близостью к границе устойчивости.}
@@ -401,7 +401,7 @@ $\alpha=0.0195$: метод начинает осциллировать вдол
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.65\textwidth]{fig_contour_const_ill.png}
+    \includegraphics[width=0.65\textwidth]{results/plots/fig_contour_const_ill.png}
     \caption{Траектория постоянного шага ($\alpha^*=0.0195$) на линиях уровня
     $g(x,y)=50x^2+0.5y^2$. Видна характерная зигзагообразная траектория:
     метод чередует большие шаги вдоль оси $y$ и маленькие вдоль оси $x$.}
@@ -453,7 +453,7 @@ $\alpha=0.0195$: метод начинает осциллировать вдол
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.75\textwidth]{fig_contour_complex_Ros.png}
+    \includegraphics[width=0.75\textwidth]{results/plots/fig_contour_complex_Ros.png}
     \caption{Постоянный шаг на функции Розенброка.
     $\alpha=0.1$ и $\alpha=0.01$ — расходимость.
     $\alpha=0.001$ (голубой) — медленная сходимость вдоль параболической долины.}
@@ -463,12 +463,12 @@ $\alpha=0.0195$: метод начинает осциллировать вдол
 \begin{figure}[H]
     \centering
     \begin{subfigure}[b]{0.48\textwidth}
-        \includegraphics[width=\textwidth]{fig_contour_complex_Ack.png}
+        \includegraphics[width=\textwidth]{results/plots/fig_contour_complex_Ack.png}
         \caption{Функция Экли}
     \end{subfigure}
     \hfill
     \begin{subfigure}[b]{0.48\textwidth}
-        \includegraphics[width=\textwidth]{fig_contour_complex_Him.png}
+        \includegraphics[width=\textwidth]{results/plots/fig_contour_complex_Him.png}
         \caption{Функция Химмельблау}
     \end{subfigure}
     \caption{Постоянный шаг на многоэкстремальных функциях.
@@ -539,7 +539,7 @@ $\varepsilon \in \{10^{-1}, \ldots, 10^{-8}\}$, $x_0=(2,2)$.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{fig_eps_ill.png}
+    \includegraphics[width=\textwidth]{results/plots/fig_eps_ill.png}
     \caption{Зависимость числа итераций, вызовов $f$ и $\grad f$ от точности $\eps$
     для плохо обусловленной квадратики.
     Армихо (синий): линейный рост. Вольфе (оранжевый): константа~— 3 итерации.}
@@ -549,12 +549,12 @@ $\varepsilon \in \{10^{-1}, \ldots, 10^{-8}\}$, $x_0=(2,2)$.
 \begin{figure}[H]
     \centering
     \begin{subfigure}[b]{0.48\textwidth}
-        \includegraphics[width=\textwidth]{fig_traj_linesearch_well.png}
+        \includegraphics[width=\textwidth]{results/plots/fig_traj_linesearch_well.png}
         \caption{Хорошо обусловленная ($\kappa=1$)}
     \end{subfigure}
     \hfill
     \begin{subfigure}[b]{0.48\textwidth}
-        \includegraphics[width=\textwidth]{fig_traj_linesearch_ill.png}
+        \includegraphics[width=\textwidth]{results/plots/fig_traj_linesearch_ill.png}
         \caption{Плохо обусловленная ($\kappa=100$)}
     \end{subfigure}
     \caption{Траектории методов Армихо и Вольфе при $\eps=10^{-4}$.
@@ -610,12 +610,12 @@ $\varepsilon \in \{10^{-1}, \ldots, 10^{-8}\}$, $x_0=(2,2)$.
 \begin{figure}[H]
     \centering
     \begin{subfigure}[b]{0.48\textwidth}
-        \includegraphics[width=\textwidth]{fig_complex_linesearch_Ros.png}
+        \includegraphics[width=\textwidth]{results/plots/fig_complex_linesearch_Ros.png}
         \caption{Розенброк}
     \end{subfigure}
     \hfill
     \begin{subfigure}[b]{0.48\textwidth}
-        \includegraphics[width=\textwidth]{fig_complex_linesearch_Him.png}
+        \includegraphics[width=\textwidth]{results/plots/fig_complex_linesearch_Him.png}
         \caption{Химмельблау}
     \end{subfigure}
     \caption{Траектории Армихо и Вольфе из нескольких стартовых точек.
@@ -672,7 +672,7 @@ $\alpha^* = \norm{g}^2/(g^\top A g)$ даёт точный минимум.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{fig_eps_steepest_ill.png}
+    \includegraphics[width=\textwidth]{results/plots/fig_eps_steepest_ill.png}
     \caption{Зависимость числа итераций, вызовов $f$ и $\grad f$ от $\eps$
     для наискорейшего спуска на плохо обусловленной квадратике.}
     \label{fig:eps_steepest_ill}
@@ -681,12 +681,12 @@ $\alpha^* = \norm{g}^2/(g^\top A g)$ даёт точный минимум.
 \begin{figure}[H]
     \centering
     \begin{subfigure}[b]{0.48\textwidth}
-        \includegraphics[width=\textwidth]{fig_steepest_well.png}
+        \includegraphics[width=\textwidth]{results/plots/fig_steepest_well.png}
         \caption{Хорошо обусловленная ($\kappa=1$)}
     \end{subfigure}
     \hfill
     \begin{subfigure}[b]{0.48\textwidth}
-        \includegraphics[width=\textwidth]{fig_steepest_ill.png}
+        \includegraphics[width=\textwidth]{results/plots/fig_steepest_ill.png}
         \caption{Плохо обусловленная ($\kappa=100$)}
     \end{subfigure}
     \caption{Траектории наискорейшего спуска на квадратичных функциях.
@@ -700,12 +700,12 @@ $\alpha^* = \norm{g}^2/(g^\top A g)$ даёт точный минимум.
 \begin{figure}[H]
     \centering
     \begin{subfigure}[b]{0.48\textwidth}
-        \includegraphics[width=\textwidth]{fig_steepest_complex_Ros.png}
+        \includegraphics[width=\textwidth]{results/plots/fig_steepest_complex_Ros.png}
         \caption{Розенброк}
     \end{subfigure}
     \hfill
     \begin{subfigure}[b]{0.48\textwidth}
-        \includegraphics[width=\textwidth]{fig_steepest_complex_Him.png}
+        \includegraphics[width=\textwidth]{results/plots/fig_steepest_complex_Him.png}
         \caption{Химмельблау}
     \end{subfigure}
     \caption{Траектории наискорейшего спуска из нескольких стартовых точек.
