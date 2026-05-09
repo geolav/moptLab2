@@ -10,9 +10,9 @@ MAX_ITER = 100_000
 def gradient_descent_steepest(
     f: Callable, grad: Callable,
     x0: np.ndarray,
-    A:  Optional[np.ndarray] = None,
-    eps:      float = 1e-8,
-    max_iter: int   = MAX_ITER,
+    A: Optional[np.ndarray] = None,
+    eps: float = 1e-8,
+    max_iter: int = MAX_ITER,
 ) -> OptResult:
     """Метод наискорейшего градиентного спуска.
 
@@ -23,11 +23,11 @@ def gradient_descent_steepest(
     cf = CallCounter(f)
     cg = CallCounter(grad)
 
-    x    = x0.copy().astype(float)
+    x = x0.copy().astype(float)
     traj = [x.copy()]
 
     for k in range(max_iter):
-        g  = cg(x)
+        g = cg(x)
         gn = np.linalg.norm(g)
         if gn < eps:
             return OptResult(x, cf(x), k, cf.count, cg.count, True, traj)
@@ -36,7 +36,7 @@ def gradient_descent_steepest(
             denom = g @ A @ g
             alpha = gn**2 / denom if denom > 1e-16 else 1e-6
         else:
-            res   = minimize_scalar(
+            res = minimize_scalar(  # TODO Change to handmade function
                 lambda a: cf(x - a * g),
                 bounds=(1e-12, 50.0), method='bounded',
             )

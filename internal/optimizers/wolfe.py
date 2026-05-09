@@ -10,16 +10,16 @@ def gradient_descent_wolfe(
     f: Callable, grad: Callable,
     x0: np.ndarray,
     alpha0: float = 1.0,
-    c1:     float = 1e-4,
-    c2:     float = 0.9,
-    eps:    float = 1e-8,
+    c1: float = 1e-4,
+    c2: float = 0.9,
+    eps: float = 1e-8,
     max_iter: int = MAX_ITER,
 ) -> OptResult:
     """Градиентный спуск с дроблением шага (сильные условия Вольфе)."""
     cf = CallCounter(f)
     cg = CallCounter(grad)
 
-    x    = x0.copy().astype(float)
+    x = x0.copy().astype(float)
     traj = [x.copy()]
 
     for k in range(max_iter):
@@ -43,9 +43,9 @@ def gradient_descent_wolfe(
 
         # Fallback: Армихо если Вольфе не нашёл шаг
         if alpha is None or alpha < 1e-15 or not np.isfinite(alpha):
-            fk    = cf(x)
+            fk = cf(x)
             alpha = alpha0
-            gn    = np.linalg.norm(g)
+            gn = np.linalg.norm(g)
             for _ in range(60):
                 if cf(x - alpha * g) <= fk - c1 * alpha * gn**2:
                     break
