@@ -1,9 +1,10 @@
 import numpy as np
 
+
 class Himmelblau:
-    """Функция Химмельблау: (x²+y-11)² + (x+y²-7)²  — 4 минимума"""
-    name = "Himmelblau"
-    x_opt = np.array([3.0, 2.0])
+    """f(x,y) = (x²+y-11)² + (x+y²-7)²  — 4 глобальных минимума"""
+    name  = "Himmelblau"
+    x_opt = np.array([3.0, 2.0])   # один из четырёх
 
     def f(self, x: np.ndarray) -> float:
         return (x[0]**2 + x[1] - 11)**2 + (x[0] + x[1]**2 - 7)**2

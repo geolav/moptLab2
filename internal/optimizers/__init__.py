@@ -1,6 +1,6 @@
-from .const import gradient_descent_const
-from .armijo import gradient_descent_armijo
-from .wolfe import gradient_descent_wolfe
+from .const    import gradient_descent_const
+from .armijo   import gradient_descent_armijo
+from .wolfe    import gradient_descent_wolfe
 from .steepest import gradient_descent_steepest
 
 __all__ = [
