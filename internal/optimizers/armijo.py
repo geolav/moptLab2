@@ -1,6 +1,7 @@
 import numpy as np
 from typing import Callable
-from ..utils import OptResult, CallCounter
+from ..utils.result  import OptResult
+from ..utils.counter import CallCounter
 
 MAX_ITER = 100_000
 
@@ -10,9 +11,8 @@ def gradient_descent_armijo(
     x0: np.ndarray,
     alpha0: float = 1.0,
     c1: float = 1e-4,
-    beta: float = 0.5,
     eps: float = 1e-8,
-    max_iter: int = MAX_ITER
+    max_iter: int = MAX_ITER,
 ) -> OptResult:
     """Градиентный спуск с дроблением шага (условие Армихо)."""
     cf = CallCounter(f)
@@ -23,16 +23,18 @@ def gradient_descent_armijo(
 
     for k in range(max_iter):
         g = cg(x)
-        if np.linalg.norm(g) < eps:
+        gn = np.linalg.norm(g)
+        if gn < eps:
             return OptResult(x, cf(x), k, cf.count, cg.count, True, traj)
 
         fk = cf(x)
         alpha = alpha0
 
-        while cf(x - alpha * g) > fk - c1 * alpha * np.dot(g, g):
-            alpha *= beta
-            if alpha < 1e-16:
+        # Дробление шага: ищем alpha удовлетворяющее условию Армихо
+        for _ in range(60):
+            if cf(x - alpha * g) <= fk - c1 * alpha * gn**2:
                 break
+            alpha *= 0.5
 
         x = x - alpha * g
         traj.append(x.copy())
