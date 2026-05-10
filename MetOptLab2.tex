@@ -345,7 +345,7 @@ $x^*_4 \approx (3.584, -1.848)$.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.65\textwidth]{results/plots/fig_iter_vs_step_Quad.png}
+    \includegraphics[width=0.65\textwidth]{results/plots/fig_iter_vs_step_well.png}
     \caption{Зависимость числа итераций от шага $\alpha$ для хорошо обусловленной
     квадратичной функции. Минимум в точке $\alpha^*=0.5$.}
     \label{fig:iter_step_well}
@@ -389,7 +389,7 @@ $\alpha=0.0195$: метод начинает осциллировать вдол
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.65\textwidth]{results/plots/fig_iter_vs_step_Quad.png}
+    \includegraphics[width=0.65\textwidth]{results/plots/fig_iter_vs_step_ill.png}
     \caption{Зависимость числа итераций от шага $\alpha$ для плохо обусловленной
     квадратичной функции. Минимум вблизи $\alpha^* \approx 0.0195$,
     рост справа объясняется близостью к границе устойчивости.}
@@ -546,12 +546,12 @@ $\varepsilon \in \{10^{-1}, \ldots, 10^{-8}\}$, $x_0=(2,2)$.
 \begin{figure}[H]
     \centering
     \begin{subfigure}[b]{0.48\textwidth}
-        \includegraphics[width=\textwidth]{results/plots/fig_traj_linesearch_Quad.png}
+        \includegraphics[width=\textwidth]{results/plots/fig_traj_linesearch_well.png}
         \caption{Хорошо обусловленная ($\kappa=1$)}
     \end{subfigure}
     \hfill
     \begin{subfigure}[b]{0.48\textwidth}
-        \includegraphics[width=\textwidth]{results/plots/fig_traj_linesearch_Quad.png}
+        \includegraphics[width=\textwidth]{results/plots/fig_traj_linesearch_ill.png}
         \caption{Плохо обусловленная ($\kappa=100$)}
     \end{subfigure}
     \caption{Траектории методов Армихо и Вольфе при $\eps=10^{-4}$.
