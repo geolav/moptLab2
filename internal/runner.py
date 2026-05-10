@@ -19,7 +19,7 @@ def run(
         print("\n" + "#" * 80)
         print(f" Running: {task.__name__} ".center(80))
         print("#" * 80 + "\n")
-        task(save_graphs=save_graphs, save_tables=save_tables)
+        task()
 
     if save_graphs:
         print(f"Graphs saved in: {plots_dir}")

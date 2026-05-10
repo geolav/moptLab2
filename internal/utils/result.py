@@ -30,7 +30,7 @@ class OptResult:
     n_iter:     int
     n_f:        int
     n_grad:     int
-    converged:  bool                   # было isConverged — исправлено
+    converged:  bool
     trajectory: list = field(default_factory=list)
 
     def __str__(self):
