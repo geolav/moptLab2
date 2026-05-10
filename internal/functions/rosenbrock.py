@@ -1,7 +1,7 @@
 import numpy as np
 
 class Rosenbrock:
-    """Функция Розенброка: f(x,y) = (1-x)² + 100(y-x²)²"""
+    """Функция Розенброка: f(x,y) = (1-x)² + 100(y-x²)² — глобальный минимум в (1,1)"""
     name = "Rosenbrock"
     x_opt = np.array([1.0, 1.0])
 

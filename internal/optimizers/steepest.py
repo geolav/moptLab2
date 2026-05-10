@@ -29,11 +29,9 @@ def gradient_descent_steepest(
             return OptResult(x, cf(x), k, cf.count, cg.count, True, traj)
 
         if A is not None:
-            # Аналитически для квадратичной: α* = ‖g‖²/(gᵀAg)
             denom = g @ A @ g
             alpha = (g @ g) / denom if denom > 1e-16 else 1e-4
         else:
-            # Численная одномерная минимизация
             def phi(a):
                 val = cf(x - a * g)
                 return val

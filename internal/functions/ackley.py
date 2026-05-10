@@ -1,7 +1,7 @@
 import numpy as np
 
 class Ackley:
-    """Функция Экли (многоэкстремальная)"""
+    """Функция Экли: f(x,y) = -20*exp(-0.2*sqrt(0.5*(x²+y²))) - exp(0.5*(cos(2πx)+cos(2πy))) + 20 + e — глобальный минимум в (0,0)"""
     name = "Ackley"
     x_opt = np.array([0.0, 0.0])
 

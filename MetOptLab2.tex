@@ -12,8 +12,8 @@
 \usepackage{float}
 \usepackage{caption}
 \usepackage{subcaption}
-\usepackage{algorithm}
-\usepackage{algpseudocode}
+% \usepackage{algorithm}
+% \usepackage{algpseudocode}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta, positioning}
 
@@ -26,13 +26,9 @@
     citecolor=red!70!black
 }
 
-\title{
-    \textbf{Лабораторная работа 2}\\
-    \large Градиентный спуск: классика\\
-    \normalsize Методы оптимизации (КТ'26)
-}
-\author{}
-\date{\today}
+\title{Лабораторная работа №2\\Градиентный спуск: классика}
+\author{Георгий Лаврентьев, Дмитрий Коваль - студенты группы М3232}
+\date{10 мая 2026 г.}
 
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\norm}[1]{\left\|#1\right\|}
@@ -46,8 +42,7 @@
 
 \begin{document}
 \maketitle
-\tableofcontents
-\newpage
+\vspace{-20pt}
 
 % ═════════════════════════════════════════════════════════════
 \section{Постановка задачи}
@@ -148,17 +143,19 @@ $\grad f(x_k)$ — градиент $f$ в точке $x_k$.
 \end{tikzpicture}
 \end{center}
 
-\begin{algorithm}
-\caption{Дробление шага (Армихо)}
-\begin{algorithmic}[1]
-\State \textbf{Вход:} $x_k$, $\alpha_0 > 0$, $c_1 \in (0,1)$, $\beta \in (0,1)$
-\State $g \leftarrow \grad f(x_k)$, $\alpha \leftarrow \alpha_0$
-\While{$f(x_k - \alpha g) > f(x_k) - c_1\,\alpha\,\norm{g}^2$}
-    \State $\alpha \leftarrow \beta \cdot \alpha$
-\EndWhile
-\State \textbf{Выход:} $\alpha_k = \alpha$
-\end{algorithmic}
-\end{algorithm}
+\begin{center}
+\fboxsep=10pt\relax
+\fbox{
+\begin{minipage}{0.8\textwidth}
+\textbf{Алгоритм: Дробление шага (Армихо)}\\[10pt]
+\textbf{Вход:} $x_k$, $\alpha_0 > 0$, $c_1 \in (0,1)$, $\beta \in (0,1)$\\
+\textbf{Шаг 1:} Вычислить $g \leftarrow \grad f(x_k)$, установить $\alpha \leftarrow \alpha_0$\\
+\textbf{Шаг 2:} \textbf{Пока} $f(x_k - \alpha g) > f(x_k) - c_1\,\alpha\,\norm{g}^2$:\\
+\quad $\alpha \leftarrow \beta \cdot \alpha$\\
+\textbf{Выход:} $\alpha_k = \alpha$
+\end{minipage}
+}
+\end{center}
 
 \subsection{Метод 3: Дробление шага с сильными условиями Вольфе}
 
@@ -239,15 +236,15 @@ $\grad f(x_k)$ — градиент $f$ в точке $x_k$.
 \begin{figure}[H]
     \centering
     \begin{subfigure}[b]{0.48\textwidth}
-        \includegraphics[width=\textwidth]{results/plots/fig_surface_well.png}
-        \caption{Поверхность $f(x,y)=x^2+y^2$}
+        \includegraphics[width=\textwidth]{results/plots/fig_contour_const_well.png}
+        \caption{Кривые уровня $f(x,y)=x^2+y^2$}
     \end{subfigure}
     \hfill
     \begin{subfigure}[b]{0.48\textwidth}
-        \includegraphics[width=\textwidth]{results/plots/fig_surface_ill.png}
-        \caption{Поверхность $g(x,y)=50x^2+0.5y^2$}
+        \includegraphics[width=\textwidth]{results/plots/fig_contour_const_ill.png}
+        \caption{Кривые уровня $g(x,y)=50x^2+0.5y^2$}
     \end{subfigure}
-    \caption{3D-поверхности квадратичных функций. Слева — сферический параболоид ($\kappa=1$),
+    \caption{Кривые уровня квадратичных функций. Слева — сферический параболоид ($\kappa=1$),
     справа — вытянутый параболоид ($\kappa=100$).}
     \label{fig:quad_surfaces}
 \end{figure}
@@ -269,8 +266,8 @@ $\grad f(x_k)$ — градиент $f$ в точке $x_k$.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.55\textwidth]{results/plots/fig_surface_Ros.png}
-    \caption{Поверхность функции Розенброка. Минимум в точке $(1,1)$ находится
+    \includegraphics[width=0.55\textwidth]{results/plots/fig_contour_complex_Ros.png}
+    \caption{Кривые уровня функции Розенброка. Минимум в точке $(1,1)$ находится
     на дне узкой параболической долины.}
     \label{fig:ros_surface}
 \end{figure}
@@ -285,8 +282,8 @@ $\grad f(x_k)$ — градиент $f$ в точке $x_k$.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.55\textwidth]{results/plots/fig_surface_Ack.png}
-    \caption{Поверхность функции Экли. Хорошо видна периодическая структура
+    \includegraphics[width=0.55\textwidth]{results/plots/fig_contour_complex_Ack.png}
+    \caption{Кривые уровня функции Экли. Хорошо видна периодическая структура
     локальных минимумов вокруг глобального минимума в начале координат.}
     \label{fig:ack_surface}
 \end{figure}
@@ -303,8 +300,8 @@ $x^*_4 \approx (3.584, -1.848)$.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.55\textwidth]{results/plots/fig_surface_Him.png}
-    \caption{Поверхность функции Химмельблау. Четыре симметричных «воронки» соответствуют
+    \includegraphics[width=0.55\textwidth]{results/plots/fig_contour_complex_Him.png}
+    \caption{Кривые уровня функции Химмельблау. Четыре симметричных «воронки» соответствуют
     четырём глобальным минимумам функции.}
     \label{fig:him_surface}
 \end{figure}
@@ -348,7 +345,7 @@ $x^*_4 \approx (3.584, -1.848)$.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.65\textwidth]{results/plots/fig_iter_vs_step_well.png}
+    \includegraphics[width=0.65\textwidth]{results/plots/fig_iter_vs_step_Quad.png}
     \caption{Зависимость числа итераций от шага $\alpha$ для хорошо обусловленной
     квадратичной функции. Минимум в точке $\alpha^*=0.5$.}
     \label{fig:iter_step_well}
@@ -392,7 +389,7 @@ $\alpha=0.0195$: метод начинает осциллировать вдол
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.65\textwidth]{results/plots/fig_iter_vs_step_ill.png}
+    \includegraphics[width=0.65\textwidth]{results/plots/fig_iter_vs_step_Quad.png}
     \caption{Зависимость числа итераций от шага $\alpha$ для плохо обусловленной
     квадратичной функции. Минимум вблизи $\alpha^* \approx 0.0195$,
     рост справа объясняется близостью к границе устойчивости.}
@@ -549,12 +546,12 @@ $\varepsilon \in \{10^{-1}, \ldots, 10^{-8}\}$, $x_0=(2,2)$.
 \begin{figure}[H]
     \centering
     \begin{subfigure}[b]{0.48\textwidth}
-        \includegraphics[width=\textwidth]{results/plots/fig_traj_linesearch_well.png}
+        \includegraphics[width=\textwidth]{results/plots/fig_traj_linesearch_Quad.png}
         \caption{Хорошо обусловленная ($\kappa=1$)}
     \end{subfigure}
     \hfill
     \begin{subfigure}[b]{0.48\textwidth}
-        \includegraphics[width=\textwidth]{results/plots/fig_traj_linesearch_ill.png}
+        \includegraphics[width=\textwidth]{results/plots/fig_traj_linesearch_Quad.png}
         \caption{Плохо обусловленная ($\kappa=100$)}
     \end{subfigure}
     \caption{Траектории методов Армихо и Вольфе при $\eps=10^{-4}$.
@@ -672,7 +669,7 @@ $\alpha^* = \norm{g}^2/(g^\top A g)$ даёт точный минимум.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{results/plots/fig_eps_steepest_ill.png}
+    \includegraphics[width=\textwidth]{results/plots/fig_eps_ill.png}
     \caption{Зависимость числа итераций, вызовов $f$ и $\grad f$ от $\eps$
     для наискорейшего спуска на плохо обусловленной квадратике.}
     \label{fig:eps_steepest_ill}

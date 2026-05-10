@@ -1,7 +1,7 @@
 import numpy as np
 
 class QuadraticWellConditioned:
-    """Хорошо обусловленная квадратичная функция: f(x,y) = x² + y²  (κ=1)"""
+    """Хорошо обусловленная квадратичная функция: f(x,y) = x² + y² (κ=1) - глобальный минимум в (0,0)"""
     name = "Quadratic (well-cond, κ=1)"
     A = np.array([[2.0, 0.0], [0.0, 2.0]])
     x_opt = np.array([0.0, 0.0])
@@ -17,7 +17,7 @@ class QuadraticWellConditioned:
 
 
 class QuadraticIllConditioned:
-    """Плохо обусловленная квадратичная функция: f(x,y) = 50x² + 0.5y²  (κ=100)"""
+    """Плохо обусловленная квадратичная функция: f(x,y) = 50x² + 0.5y² (κ=100) - глобальный минимум в (0,0)"""
     name = "Quadratic (ill-cond, κ=100)"
     A = np.array([[100.0, 0.0], [0.0, 1.0]])
     x_opt = np.array([0.0, 0.0])

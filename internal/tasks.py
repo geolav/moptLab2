@@ -19,15 +19,15 @@ from internal.utils import (
     plot_iter_vs_eps,
     print_table,
 )
-from internal.runner import run
 
 
-def constant_step_quadratics(eps=1e-8):
+def constant_step_quadratics(save_graphs=True, save_tables=True, eps=1e-8):
     print("\n" + "="*70)
     print("Постоянный шаг на квадратичных функциях")
     print("="*70)
 
     funcs = [QuadraticWellConditioned(), QuadraticIllConditioned()]
+
     x0 = np.array([2.0, 2.0])
 
     steps_per_func = [
@@ -38,6 +38,9 @@ def constant_step_quadratics(eps=1e-8):
     for func, steps in zip(funcs, steps_per_func):
         rows = []
         iters_list = []
+        best_alpha, best_iter = None, np.inf
+        best_result = None
+        
         for alpha in steps:
             r = gradient_descent_const(func.f, func.grad, x0, alpha, eps)
             iters_list.append(r.n_iter if r.converged else None)
@@ -47,38 +50,38 @@ def constant_step_quadratics(eps=1e-8):
                 f"{r.f_val:.2e}",
                 "✓" if r.converged else "✗",
             ])
-        print_table(["Шаг α", "Итерации", "f(x*)", "Сошлось?"], rows, title=func.name)
+            
+            if r.converged and r.n_iter < best_iter:
+                best_iter = r.n_iter
+                best_alpha = alpha
+                best_result = r
+        
+        print_table(["Шаг α", "Итерации", "f(x*)", "Сошлось?"], rows, title=func.name, save=save_tables)
 
         valid = [(s, it) for s, it in zip(steps, iters_list) if it is not None]
         if valid:
             ss, ii = zip(*valid)
-            plot_iter_vs_step(ss, ii, f"Итерации от шага: {func.name}", filename=f"fig_iter_vs_step_{func.name[:4]}.png")
+            plot_iter_vs_step(ss, ii, f"Итерации от шага: {func.name}", filename=f"fig_iter_vs_step_{func.name[:4]}.png", save=save_graphs)
 
-    for func, steps in zip(funcs, steps_per_func):
-        best_alpha, best_iter = None, np.inf
-        for alpha in steps:
-            r = gradient_descent_const(func.f, func.grad, x0, alpha, eps)
-            if r.converged and r.n_iter < best_iter:
-                best_iter = r.n_iter
-                best_alpha = alpha
-        if best_alpha is not None:
-            r = gradient_descent_const(func.f, func.grad, x0, best_alpha, eps)
+        if best_alpha is not None and best_result is not None:
             plot_contour_with_trajectory(
                 func.f,
                 f"Траектория: {func.name}\n(α*={best_alpha})",
-                {f"GD α={best_alpha}": r.trajectory},
+                {f"GD α={best_alpha}": best_result.trajectory},
                 xlim=(-3, 3),
                 ylim=(-3, 3),
                 filename=f"fig_contour_const_{'well' if 'well' in func.name else 'ill'}.png",
+                save=save_graphs,
             )
 
 
-def constant_step_complex(eps=1e-8):
+def constant_step_complex(save_graphs=True, save_tables=True, eps=1e-8):
     print("\n" + "="*70)
     print("Постоянный шаг на сложных функциях")
     print("="*70)
 
     funcs = [Rosenbrock(), Ackley(), Himmelblau()]
+
     x0s = {
         "Rosenbrock": np.array([-1.0, 1.0]),
         "Ackley": np.array([1.5, 1.0]),
@@ -101,7 +104,7 @@ def constant_step_complex(eps=1e-8):
             ])
             trajectories[f"α={alpha}"] = r.trajectory
 
-        print_table(["Шаг α", "Итерации", "f(x*)", "x*", "Сошлось?"], rows, title=func.name)
+        print_table(["Шаг α", "Итерации", "f(x*)", "x*", "Сошлось?"], rows, title=func.name, save=save_tables)
 
     xlims = {"Rosenbrock": (-2, 2), "Ackley": (-3, 3), "Himmelblau": (-5, 5)}
     ylims = {"Rosenbrock": (-1, 3), "Ackley": (-3, 3), "Himmelblau": (-5, 5)}
@@ -119,10 +122,11 @@ def constant_step_complex(eps=1e-8):
             xlim=xlims[func.name],
             ylim=ylims[func.name],
             filename=f"fig_contour_complex_{func.name[:3]}.png",
+            save=save_graphs,
         )
 
 
-def line_search_precision_dependency():
+def line_search_precision_dependency(save_graphs=True, save_tables=True):
     print("\n" + "="*70)
     print("Дробление шага — зависимость от точности")
     print("="*70)
@@ -152,12 +156,12 @@ def line_search_precision_dependency():
                 "grad_calls",
                 "f(x*)",
                 "Сошлось?",
-            ], rows, title=f"{func.name} | {method_name}")
+            ], rows, title=f"{func.name} | {method_name}", save=save_tables)
 
             results_by_method[method_name] = results
 
         suffix = "well" if "well" in func.name else "ill"
-        plot_iter_vs_eps(epsilons, results_by_method, func.name, filename=f"fig_eps_{suffix}.png")
+        plot_iter_vs_eps(epsilons, results_by_method, func.name, filename=f"fig_eps_{suffix}.png", save=save_graphs)
 
         eps_fixed = 1e-4
         trajectories = {}
@@ -172,10 +176,11 @@ def line_search_precision_dependency():
             f"Траектории при ε=1e-4: {func.name}",
             trajectories,
             filename=f"fig_traj_linesearch_{func.name[:4]}.png",
+            save=save_graphs,
         )
 
 
-def line_search_complex(eps=1e-8):
+def line_search_complex(save_graphs=True, save_tables=True, eps=1e-8):
     print("\n" + "="*70)
     print("Дробление шага на сложных функциях")
     print("="*70)
@@ -217,7 +222,7 @@ def line_search_complex(eps=1e-8):
             "grad_calls",
             "f(x*)",
             "Сошлось?",
-        ], rows, title=func.name)
+        ], rows, title=func.name, save=save_tables)
         plot_contour_with_trajectory(
             func.f,
             f"Дробление шага: {func.name}",
@@ -225,10 +230,11 @@ def line_search_complex(eps=1e-8):
             xlim=xlims[func.name],
             ylim=ylims[func.name],
             filename=f"fig_complex_linesearch_{func.name[:3]}.png",
+            save=save_graphs,
         )
 
 
-def steepest_descent_analysis():
+def steepest_descent_analysis(save_graphs=True, save_tables=True):
     print("\n" + "="*70)
     print("Метод наискорейшего градиента")
     print("="*70)
@@ -244,12 +250,12 @@ def steepest_descent_analysis():
             r = gradient_descent_steepest(func.f, func.grad, x0, A=func.A, eps=eps)
             results.append(r)
             rows.append([f"{eps:.0e}", r.n_iter, r.n_f, r.n_grad, f"{r.f_val:.2e}", "✓" if r.converged else "✗"])
-        print_table(["ε", "Итерации", "f_calls", "grad_calls", "f(x*)", "Сошлось?"], rows, title=f"Наискорейший спуск: {func.name}")
+        print_table(["ε", "Итерации", "f_calls", "grad_calls", "f(x*)", "Сошлось?"], rows, title=f"Наискорейший спуск: {func.name}", save=save_tables)
 
     for func in quad_funcs:
         r = gradient_descent_steepest(func.f, func.grad, x0, A=func.A)
         suffix = "well" if "well" in func.name else "ill"
-        plot_contour_with_trajectory(func.f, f"Наискорейший спуск: {func.name}", {f"Steepest": r.trajectory}, filename=f"fig_steepest_{suffix}.png")
+        plot_contour_with_trajectory(func.f, f"Наискорейший спуск: {func.name}", {f"Steepest": r.trajectory}, filename=f"fig_steepest_{suffix}.png", save=save_graphs)
 
     complex_funcs = [Rosenbrock(), Himmelblau()]
     start_points = {
@@ -268,7 +274,7 @@ def steepest_descent_analysis():
             trajectories[key] = r.trajectory
             rows.append([str(np.round(x0, 2)), r.n_iter, r.n_f, r.n_grad, f"{r.f_val:.4e}", "✓" if r.converged else "✗"])
 
-        print_table(["x0", "Итерации", "f_calls", "grad_calls", "f(x*)", "Сошлось?"], rows, title=f"Наискорейший: {func.name}")
+        print_table(["x0", "Итерации", "f_calls", "grad_calls", "f(x*)", "Сошлось?"], rows, title=f"Наискорейший: {func.name}", save=save_tables)
         plot_contour_with_trajectory(
             func.f,
             f"Наискорейший спуск: {func.name}",
@@ -276,4 +282,5 @@ def steepest_descent_analysis():
             xlim=xlims[func.name],
             ylim=ylims[func.name],
             filename=f"fig_steepest_complex_{func.name[:3]}.png",
+            save=save_graphs,
         )

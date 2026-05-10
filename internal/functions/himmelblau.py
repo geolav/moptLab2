@@ -1,7 +1,7 @@
 import numpy as np
 
 class Himmelblau:
-    """Функция Химмельблау: (x²+y-11)² + (x+y²-7)²  — 4 минимума"""
+    """Функция Химмельблау: (x²+y-11)² + (x+y²-7)²  — 4 локальных минимума"""
     name = "Himmelblau"
     x_opt = np.array([3.0, 2.0])
 
