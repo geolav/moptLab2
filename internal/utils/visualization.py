@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 
 
-# ─── Куда сохранять графики ───────────────────────────────────
 PLOTS_DIR = Path(__file__).resolve().parents[2] / "results" / "plots"
 
 
@@ -15,8 +14,6 @@ def _save(fig, filename: str):
         fig.savefig(PLOTS_DIR / filename, dpi=150, bbox_inches='tight')
     plt.close(fig)
 
-
-# ─── Линии уровня + траектории ────────────────────────────────
 
 def plot_contour_with_trajectory(
     f, title, trajectories: dict,
@@ -40,7 +37,6 @@ def plot_contour_with_trajectory(
         pts = np.array(traj)
         if len(pts) < 2:
             continue
-        # обрезаем точки вышедшие за границы
         mask = ((pts[:, 0] >= xlim[0]) & (pts[:, 0] <= xlim[1]) &
                 (pts[:, 1] >= ylim[0]) & (pts[:, 1] <= ylim[1]))
         cut = int(np.argmin(mask)) if not mask.all() else len(pts)
@@ -58,8 +54,6 @@ def plot_contour_with_trajectory(
     _save(fig, filename)
 
 
-# ─── Итерации от шага ─────────────────────────────────────────
-
 def plot_iter_vs_step(steps, iters, title, xlabel='Шаг α', filename=None):
     fig, ax = plt.subplots(figsize=(7, 4))
     ax.semilogy(steps, iters, 'o-', color='steelblue', linewidth=2)
@@ -69,8 +63,6 @@ def plot_iter_vs_step(steps, iters, title, xlabel='Шаг α', filename=None):
     plt.tight_layout()
     _save(fig, filename)
 
-
-# ─── iter / f_calls / grad_calls от ε ────────────────────────
 
 def plot_iter_vs_eps(epsilons, results_dict, title, filename=None):
     fig, axes = plt.subplots(1, 3, figsize=(14, 4))
@@ -90,10 +82,8 @@ def plot_iter_vs_eps(epsilons, results_dict, title, filename=None):
     _save(fig, filename)
 
 
-# ─── 3D-поверхность ───────────────────────────────────────────
-
 def plot_surface(f, title, xlim, ylim, zlim, filename, cmap='viridis'):
-    from mpl_toolkits.mplot3d import Axes3D  # noqa
+    from mpl_toolkits.mplot3d import Axes3D
     xx, yy = np.meshgrid(np.linspace(*xlim, 150), np.linspace(*ylim, 150))
     zz = np.vectorize(lambda a, b: f(np.array([a, b])))(xx, yy)
     zz = np.where(np.isfinite(zz), zz, np.nan)
@@ -107,8 +97,6 @@ def plot_surface(f, title, xlim, ylim, zlim, filename, cmap='viridis'):
     plt.tight_layout()
     _save(fig, filename)
 
-
-# ─── Таблица в консоль (+ CSV) ────────────────────────────────
 
 def print_table(headers, rows, title=""):
     if title:
@@ -125,7 +113,6 @@ def print_table(headers, rows, title=""):
         print(fmt.format(*[str(c) for c in row]))
     print()
 
-    # сохраняем CSV
     import csv
     tables_dir = Path(__file__).resolve().parents[2] / "results" / "tables"
     tables_dir.mkdir(parents=True, exist_ok=True)

@@ -41,7 +41,6 @@ def gradient_descent_wolfe(
                 break
             alpha *= 0.5
 
-        # Fallback: Армихо если Вольфе не нашёл шаг
         if alpha is None or alpha < 1e-15 or not np.isfinite(alpha):
             fk    = cf(x)
             alpha = alpha0

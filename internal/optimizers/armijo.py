@@ -31,7 +31,6 @@ def gradient_descent_armijo(
         fk    = cf(x)
         alpha = alpha0
 
-        # Дробление шага: ищем alpha удовлетворяющее условию Армихо
         for _ in range(60):
             if cf(x - alpha * g) <= fk - c1 * alpha * gn**2:
                 break

@@ -22,20 +22,12 @@ from internal.utils.visualization import (
 )
 
 
-# ══════════════════════════════════════════════════════════════
-#  Вспомогательная функция: уникальный суффикс для имён файлов
-# ══════════════════════════════════════════════════════════════
-
 def _tag(func) -> str:
     """'well', 'ill', 'Ros', 'Ack', 'Him' — уникальный тег функции."""
     if 'well' in func.name: return 'well'
     if 'ill'  in func.name: return 'ill'
     return func.name[:3]   # Ros / Ack / Him
 
-
-# ══════════════════════════════════════════════════════════════
-#  3D-поверхности всех тестовых функций
-# ══════════════════════════════════════════════════════════════
 
 def generate_surfaces():
     """Генерирует файлы fig_surface_*.png."""
@@ -67,14 +59,6 @@ def generate_surfaces():
     for args in items:
         plot_surface(*args)
 
-
-# ══════════════════════════════════════════════════════════════
-#  ЗАДАНИЕ 1: Постоянный шаг на квадратичных функциях
-# ══════════════════════════════════════════════════════════════
-#
-#  Генерируемые файлы:
-#    fig_iter_vs_step_well.png   fig_iter_vs_step_ill.png
-#    fig_contour_const_well.png  fig_contour_const_ill.png
 
 def constant_step_quadratics(eps: float = 1e-8):
     print("\n" + "="*70)
@@ -116,7 +100,6 @@ def constant_step_quadratics(eps: float = 1e-8):
                 filename=f"fig_iter_vs_step_{tag}.png",
             )
 
-        # Контурный график с оптимальным шагом
         best_alpha = min(sv, key=lambda a:
                          gradient_descent_const(func.f, func.grad, x0, a, eps).n_iter)
         r_best = gradient_descent_const(func.f, func.grad, x0, best_alpha, eps)
@@ -128,15 +111,6 @@ def constant_step_quadratics(eps: float = 1e-8):
             filename=f"fig_contour_const_{tag}.png",
         )
 
-
-# ══════════════════════════════════════════════════════════════
-#  ЗАДАНИЕ 2: Постоянный шаг на сложных функциях
-# ══════════════════════════════════════════════════════════════
-#
-#  Генерируемые файлы:
-#    fig_contour_complex_Ros.png
-#    fig_contour_complex_Ack.png
-#    fig_contour_complex_Him.png
 
 def constant_step_complex(eps: float = 1e-8):
     print("\n" + "="*70)
@@ -176,14 +150,6 @@ def constant_step_complex(eps: float = 1e-8):
         )
 
 
-# ══════════════════════════════════════════════════════════════
-#  ЗАДАНИЕ 4: Дробление шага — зависимость от точности ε
-# ══════════════════════════════════════════════════════════════
-#
-#  Генерируемые файлы:
-#    fig_eps_well.png              fig_eps_ill.png
-#    fig_traj_linesearch_well.png  fig_traj_linesearch_ill.png
-
 def line_search_precision_dependency():
     print("\n" + "="*70)
     print("ЗАДАНИЕ 4: Дробление шага — зависимость от точности")
@@ -221,7 +187,6 @@ def line_search_precision_dependency():
             filename=f"fig_eps_{tag}.png",
         )
 
-        # Контурный график при ε = 1e-4
         trajs = {
             name: method_fn(func.f, func.grad, x0, eps=1e-4).trajectory
             for name, method_fn in [
@@ -236,14 +201,6 @@ def line_search_precision_dependency():
             filename=f"fig_traj_linesearch_{tag}.png",
         )
 
-
-# ══════════════════════════════════════════════════════════════
-#  ЗАДАНИЕ 5: Дробление шага на сложных функциях
-# ══════════════════════════════════════════════════════════════
-#
-#  Генерируемые файлы:
-#    fig_complex_linesearch_Ros.png
-#    fig_complex_linesearch_Him.png
 
 def line_search_complex(eps: float = 1e-8):
     print("\n" + "="*70)
@@ -292,15 +249,6 @@ def line_search_complex(eps: float = 1e-8):
         )
 
 
-# ══════════════════════════════════════════════════════════════
-#  ЗАДАНИЕ 6: Метод наискорейшего градиентного спуска
-# ══════════════════════════════════════════════════════════════
-#
-#  Генерируемые файлы:
-#    fig_steepest_well.png         fig_steepest_ill.png
-#    fig_eps_steepest_ill.png
-#    fig_steepest_complex_Ros.png  fig_steepest_complex_Him.png
-
 def steepest_descent_analysis():
     print("\n" + "="*70)
     print("ЗАДАНИЕ 6: Метод наискорейшего градиентного спуска")
@@ -309,7 +257,6 @@ def steepest_descent_analysis():
     x0       = np.array([2.0, 2.0])
     epsilons = [10**(-k) for k in range(1, 9)]
 
-    # Квадратичные функции — зависимость от точности
     for func in [QuadraticWellConditioned(), QuadraticIllConditioned()]:
         tag  = _tag(func)
         rows = []
@@ -326,14 +273,12 @@ def steepest_descent_analysis():
             rows, title=f"Наискорейший спуск: {func.name}",
         )
 
-        # График от ε только для плохо обусловленной (интересен)
         if tag == 'ill':
             plot_iter_vs_eps(
                 epsilons, {"Наискорейший": rs}, func.name,
                 filename="fig_eps_steepest_ill.png",
             )
 
-        # Контурный график
         r_plot = gradient_descent_steepest(func.f, func.grad, x0, A=func.A, eps=1e-8)
         plot_contour_with_trajectory(
             func.f,
@@ -343,7 +288,6 @@ def steepest_descent_analysis():
             filename=f"fig_steepest_{tag}.png",
         )
 
-    # Сложные функции
     configs = [
         (Rosenbrock(),
          [np.array([-1.0, 1.0]), np.array([0.5, -0.5])],
