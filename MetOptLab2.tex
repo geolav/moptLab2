@@ -44,6 +44,7 @@
 \maketitle
 \vspace{-20pt}
 
+
 % ═════════════════════════════════════════════════════════════
 \section{Постановка задачи}
 % ═════════════════════════════════════════════════════════════
@@ -66,22 +67,30 @@
 \section{Описание методов}
 % ═════════════════════════════════════════════════════════════
 
-\subsection{Общая схема градиентного спуска}
+\subsection{Общая схема методов спуска}
 
-Все рассматриваемые методы имеют общую итерационную структуру:
+\begin{definition}[Общая схема метода спуска]
+    Пусть выбрана начальная точка $x_0$. Будем говорить, что итерационный процесс
+    $\{x_k\}_{k=0}^{\infty}$ имеет форму \emph{метода спуска}, если последовательность
+    задается рекуррентным соотношением
+    \[
+        x_k = x_{k-1} + \beta_k u_k, \quad k \in \mathbb{N},
+    \]
+    где $u_k \in \mathbb{R}^n$ — единичный вектор, определяющий направление движения
+    на $k$-й итерации, а $\beta_k \geq 0$ — длина шага вдоль этого направления.
+\end{definition}
+
+В данной работе в качестве направления спуска везде выбирается \textbf{антиградиент}:
+\[
+    u_k = -\frac{\grad f(x_{k-1})}{\norm{\grad f(x_{k-1})}}.
+\]
+
+Поэтому итерационная формула принимает вид
 \begin{equation}
     \label{eq:gd_update}
-    x_{k+1} = x_k - \alpha_k \, \grad f(x_k),
+    x_k = x_{k-1} - \alpha_k \grad f(x_{k-1}), \qquad k \in \mathbb{N},
 \end{equation}
-где $\alpha_k > 0$ — \emph{длина шага} на $k$-й итерации,
-$\grad f(x_k)$ — градиент $f$ в точке $x_k$.
-
-\begin{definition}[Направление антиградиента]
-    Вектор $d_k = -\grad f(x_k)$ называется \emph{направлением наискорейшего убывания}
-    функции $f$ в точке $x_k$, так как
-    $\displaystyle\lim_{\alpha \to 0^+} \frac{f(x_k + \alpha d_k) - f(x_k)}{\alpha}
-    = -\norm{\grad f(x_k)}^2 \leq 0$.
-\end{definition}
+где $\alpha_k = \beta_k / \norm{\grad f(x_{k-1})} > 0$ — параметр шага.
 
 Критерий остановки во всех экспериментах:
 \[
@@ -89,6 +98,15 @@ $\grad f(x_k)$ — градиент $f$ в точке $x_k$.
 \]
 
 \subsection{Метод 1: Постоянный шаг}
+
+Наиболее простой вариант состоит в том, что параметр спуска фиксируется заранее и не меняется от итерации к итерации:
+\[
+    \alpha_k \equiv \alpha > 0.
+\]
+Тогда метод принимает вид
+\[
+    x_k = x_{k-1} - \alpha \grad f(x_{k-1}).
+\]
 
 \begin{definition}[Константа Липшица градиента]
     Функция $f$ имеет $L$-\emph{гладкий градиент}, если
@@ -99,7 +117,7 @@ $\grad f(x_k)$ — градиент $f$ в точке $x_k$.
 \end{definition}
 
 \begin{theorem}[Сходимость при постоянном шаге]
-    Пусть $f$ выпукла и $L$-гладка. Тогда метод~\eqref{eq:gd_update}
+    Пусть $f$ выпукла и $L$-гладка. Тогда метод \eqref{eq:gd_update}
     с постоянным шагом $\alpha \in (0, 2/L)$ сходится, причём
     \[
         f(x_k) - f(x^*) \leq \frac{L\norm{x_0 - x^*}^2}{2}\cdot(1 - \alpha L)^k.
@@ -107,28 +125,26 @@ $\grad f(x_k)$ — градиент $f$ в точке $x_k$.
     При сильной выпуклости с константой $\mu > 0$ сходимость геометрическая.
 \end{theorem}
 
-\begin{remark}
-    Для квадратичной функции $f(x) = \tfrac{1}{2}x^\top A x$ с $A \succ 0$
-    константа $L = \lambda_{\max}(A)$.
-    \textbf{Оптимальный шаг}:
-    \[
-        \alpha^* = \frac{2}{\lambda_{\min}(A) + \lambda_{\max}(A)},
-        \qquad
-        \rho = \left(\frac{\kappa - 1}{\kappa + 1}\right)^2,
-    \]
-    где $\kappa = \lambda_{\max}/\lambda_{\min}$ — число обусловленности.
-    Число итераций оценивается как $k \geq \tfrac{\kappa}{2}\ln\tfrac{\norm{x_0-x^*}}{\eps}$.
-\end{remark}
-
 \subsection{Метод 2: Дробление шага с условием Армихо}
 
-Выбирается $\alpha_k = \beta^{m_k}\alpha_0$, где $m_k$ — наименьшее целое,
-при котором выполнено \textbf{условие достаточного убывания (Армихо)}:
-\begin{equation}
-    \label{eq:armijo}
-    f(x_k - \alpha \, \grad f(x_k)) \leq f(x_k) - c_1 \,\alpha\, \norm{\grad f(x_k)}^2,
-\end{equation}
-где $c_1 \in (0, 1)$ (типично $c_1 = 10^{-4}$), $\beta \in (0,1)$ (типично $\beta = 0.5$).
+Метод дробления шага не пытается решать одномерную задачу точно, но и не использует заранее фиксированный шаг без проверки. На $k$-й итерации выбирается начальное пробное значение $\alpha_0 > 0$ и коэффициент уменьшения $q \in (0,1)$. Далее проверяется некоторое условие приемлемости шага. Если оно выполнено, полагаем $\alpha_k = \alpha_0$. Если нет, шаг уменьшается: $\alpha_1 = q \alpha_0$, и проверка повторяется.
+
+\begin{definition}[Условие Армихо]
+    Для антиградиентного направления $p_k = -\grad f(x_{k-1})$ условие Армихо имеет вид
+    \[
+        f(x_{k-1} + \alpha p_k) \leq f(x_{k-1}) + c_1 \alpha \langle \grad f(x_{k-1}), p_k \rangle,
+        \quad c_1 \in (0,1).
+    \]
+    Так как $p_k = -\grad f(x_{k-1})$, оно переписывается как
+    \[
+        f(x_k) \leq f(x_{k-1}) - c_1 \alpha_k \norm{\grad f(x_{k-1})}^2.
+    \]
+    Геометрически это условие означает, что новое значение функции должно уменьшиться
+    достаточно заметно по сравнению с линейным прогнозом, который даёт градиент в точке $x_{k-1}$.
+\end{definition}
+
+Выбирается $\alpha_k = q^{m_k} \alpha_0$, где $m_k$ — наименьшее целое, при котором выполнено условие Армихо.
+Типичные значения: $c_1 = 10^{-4}$, $q = 0.5$.
 
 \begin{center}
 \begin{tikzpicture}[scale=0.9]
@@ -148,10 +164,10 @@ $\grad f(x_k)$ — градиент $f$ в точке $x_k$.
 \fbox{
 \begin{minipage}{0.8\textwidth}
 \textbf{Алгоритм: Дробление шага (Армихо)}\\[10pt]
-\textbf{Вход:} $x_k$, $\alpha_0 > 0$, $c_1 \in (0,1)$, $\beta \in (0,1)$\\
-\textbf{Шаг 1:} Вычислить $g \leftarrow \grad f(x_k)$, установить $\alpha \leftarrow \alpha_0$\\
-\textbf{Шаг 2:} \textbf{Пока} $f(x_k - \alpha g) > f(x_k) - c_1\,\alpha\,\norm{g}^2$:\\
-\quad $\alpha \leftarrow \beta \cdot \alpha$\\
+\textbf{Вход:} $x_{k-1}$, $\alpha_0 > 0$, $c_1 \in (0,1)$, $q \in (0,1)$\\
+\textbf{Шаг 1:} Вычислить $g \leftarrow \grad f(x_{k-1})$, установить $\alpha \leftarrow \alpha_0$\\
+\textbf{Шаг 2:} \textbf{Пока} $f(x_{k-1} - \alpha g) > f(x_{k-1}) - c_1 \alpha \norm{g}^2$:\\
+\quad $\alpha \leftarrow q \cdot \alpha$\\
 \textbf{Выход:} $\alpha_k = \alpha$
 \end{minipage}
 }
@@ -159,52 +175,82 @@ $\grad f(x_k)$ — градиент $f$ в точке $x_k$.
 
 \subsection{Метод 3: Дробление шага с сильными условиями Вольфе}
 
-\textbf{Условие 1 (Армихо):}
-\[
-    f(x_k + \alpha d_k) \leq f(x_k) + c_1\,\alpha\,\grad f(x_k)^\top d_k,
-    \quad d_k = -\grad f(x_k).
-\]
+\begin{definition}[Сильные условия Вольфе]
+    Для направления $p_k = -\grad f(x_{k-1})$ сильные условия Вольфе состоят из двух неравенств:
+    \begin{align}
+        &\text{(Условие Армихо)} \quad
+        f(x_{k-1} + \alpha p_k) \leq f(x_{k-1}) + c_1 \alpha \langle \grad f(x_{k-1}), p_k \rangle, \\
+        &\text{(Условие кривизны)} \quad
+        \bigl| \langle \grad f(x_{k-1} + \alpha p_k), p_k \rangle \bigr| \leq c_2 \bigl| \langle \grad f(x_{k-1}), p_k \rangle \bigr|,
+    \end{align}
+    где $0 < c_1 < c_2 < 1$.
+\end{definition}
 
-\textbf{Условие 2 (кривизны):}
-\[
-    \left|\grad f(x_k + \alpha d_k)^\top d_k\right|
-    \leq c_2\,\left|\grad f(x_k)^\top d_k\right|,
-    \quad 0 < c_1 < c_2 < 1.
-\]
+Для антиградиентного направления $p_k = -g_{k-1}$ эти условия принимают вид:
+\begin{align}
+    f(x_k) &\leq f(x_{k-1}) - c_1 \alpha_k \norm{g_{k-1}}^2, \\
+    |\langle g_k, g_{k-1} \rangle| &\leq c_2 \norm{g_{k-1}}^2.
+\end{align}
 
 \begin{remark}
-    Условие кривизны запрещает шаг слишком малым: требуется, чтобы
-    $|\phi'(\alpha)|$ уменьшилось относительно $|\phi'(0)|$.
-    Это удерживает $\alpha$ вблизи локального минимума функции $\phi(\alpha) = f(x_k + \alpha d_k)$.
+    Условие кривизны запрещает шаг слишком малым: требуется, чтобы $|\phi'(\alpha)|$ уменьшилось
+    относительно $|\phi'(0)|$, где $\phi(\alpha) = f(x_{k-1} + \alpha p_k)$.
+    Это удерживает $\alpha$ вблизи локального минимума функции $\phi(\alpha)$.
+
+    Геометрически здесь исключаются две плохие ситуации:
+    \begin{itemize}
+        \item Если $\langle g_k, p_k \rangle < 0$ и по модулю всё ещё велико, то функция по-прежнему
+              сильно убывает вдоль того же направления — шаг был слишком коротким.
+        \item Если $\langle g_k, p_k \rangle > 0$ и по модулю велико, то производная вдоль линии
+              резко сменила знак — шаг получился слишком большим.
+    \end{itemize}
 \end{remark}
 
 \begin{theorem}[Существование шага Вольфе]
-    Если $f$ ограничена снизу, непрерывно дифференцируема и $\grad f(x_k)^\top d_k < 0$,
+    Если $f$ ограничена снизу, непрерывно дифференцируема и $\langle \grad f(x_{k-1}), p_k \rangle < 0$,
     то существует $\alpha > 0$, удовлетворяющий сильным условиям Вольфе.
 \end{theorem}
 
-\subsection{Метод 4: Метод наискорейшего спуска}
+\subsection{Метод 4: Метод наискорейшего градиентного спуска}
 
-Шаг выбирается как точный минимум вдоль антиградиента:
-\begin{equation}
-    \label{eq:steepest}
-    \alpha_k = \arg\min_{\alpha > 0} f\!\left(x_k - \alpha\,\grad f(x_k)\right).
-\end{equation}
+\begin{definition}[Метод наискорейшего градиентного спуска]
+    Методом наискорейшего градиентного спуска назовём итерационный процесс
+    \[
+        x_k = x_{k-1} - \alpha_k \grad f(x_{k-1}), \qquad g_{k-1} = \grad f(x_{k-1}),
+    \]
+    где параметр $\alpha_k$ выбирается из условия
+    \[
+        \alpha_k \in \arg\min_{\alpha \geq 0} f(x_{k-1} - \alpha g_{k-1}).
+    \]
+\end{definition}
+
+На каждой итерации здесь возникает задача одномерной минимизации функции
+\[
+    \varphi_k(\alpha) = f(x_{k-1} - \alpha g_{k-1}), \qquad \alpha \geq 0.
+\]
+
+\begin{theorem}[Ортогональность соседних антиградиентов]
+    Пусть функция $f(x)$ дифференцируема, а шаг $\alpha_k$ в методе наискорейшего
+    градиентного спуска выбирается точным одномерным поиском. Если $g_{k-1} \neq 0$, то
+    \[
+        \langle g_k, g_{k-1} \rangle = 0.
+    \]
+\end{theorem}
 
 \paragraph{Аналитическая формула для квадратичных функций.}
-Для $f(x) = \tfrac{1}{2} x^\top A x$ ($A \succ 0$), $g_k = \grad f(x_k) = Ax_k$:
+Для $f(x) = \tfrac{1}{2} x^\top A x$ ($A \succ 0$), $g_k = \grad f(x_k) = A x_k$:
 \begin{equation}
     \label{eq:optimal_alpha_quad}
     \boxed{\alpha_k^* = \frac{\norm{g_k}^2}{g_k^\top A g_k}.}
 \end{equation}
 
-\begin{theorem}[Сходимость наискорейшего спуска]
-    Для $f(x) = \tfrac{1}{2}x^\top A x$:
+\begin{theorem}[Сходимость наискорейшего спуска на квадратичной функции]
+    Для $f(x) = \tfrac{1}{2} x^\top A x$:
     \[
-        \norm{x_k - x^*}_A \leq \left(\frac{\kappa - 1}{\kappa + 1}\right)^k \norm{x_0 - x^*}_A.
+        \norm{x_k - x^*}_A \leq \left( \frac{\kappa - 1}{\kappa + 1} \right)^k \norm{x_0 - x^*}_A,
     \]
-    Последовательные градиенты ортогональны: $g_{k+1} \perp g_k$,
-    что при большом $\kappa$ порождает зигзагообразные траектории.
+    где $\norm{\cdot}_A$ — норма, порождённая матрицей $A$. Последовательные градиенты ортогональны:
+    $g_{k+1} \perp g_k$, что при большом $\kappa$ порождает зигзагообразные траектории.
 \end{theorem}
 
 % ═════════════════════════════════════════════════════════════
@@ -319,25 +365,8 @@ $x^*_4 \approx (3.584, -1.848)$.
 
 \subsubsection{Хорошо обусловленная функция ($\kappa = 1$)}
 
-\begin{table}[H]
-\centering
-\caption{Число итераций от шага $\alpha$ для $f(x,y)=x^2+y^2$.}
-\label{tab:well_cond_step}
-\begin{tabular}{cccc}
-\toprule
-Шаг $\alpha$ & Итерации & $f(x^*)$ & Сошлось? \\
-\midrule
-0.001  & 10067 & $2.5 \times 10^{-17}$ & \checkmark \\
-0.010  & 998   & $2.5 \times 10^{-17}$ & \checkmark \\
-0.050  & 192   & $2.1 \times 10^{-17}$ & \checkmark \\
-0.100  & 91    & $1.8 \times 10^{-17}$ & \checkmark \\
-0.200  & 40    & $1.4 \times 10^{-17}$ & \checkmark \\
-\textbf{0.500}  & \textbf{1} & \textbf{0} & \checkmark \\
-0.900  & 91    & $1.8 \times 10^{-17}$ & \checkmark \\
-0.990  & 998   & $2.5 \times 10^{-17}$ & \checkmark \\
-\bottomrule
-\end{tabular}
-\end{table}
+% Auto-generated table for constant-step (well-conditioned quadratic)
+\input{results/tables/Quadratic__well_cond__κ_1_.tex}
 
 \paragraph{Вывод.} Оптимальный шаг $\alpha^* = \frac{2}{\lambda_{\min}+\lambda_{\max}} = \frac{2}{2+2} = 0.5$
 обеспечивает сходимость за 1 итерацию — метод попадает в минимум точно.
@@ -362,25 +391,8 @@ $x^*_4 \approx (3.584, -1.848)$.
 
 \subsubsection{Плохо обусловленная функция ($\kappa = 100$)}
 
-\begin{table}[H]
-\centering
-\caption{Число итераций от шага $\alpha$ для $g(x,y)=50x^2+0.5y^2$.}
-\label{tab:ill_cond_step}
-\begin{tabular}{cccc}
-\toprule
-Шаг $\alpha$ & Итерации & $f(x^*)$ & Сошлось? \\
-\midrule
-0.0001  & —     & $4.1 \times 10^{-9}$  & $\times$ (лимит) \\
-0.0010  & 19105 & $5.0 \times 10^{-17}$ & \checkmark \\
-0.0050  & 3814  & $5.0 \times 10^{-17}$ & \checkmark \\
-0.0100  & 1902  & $5.0 \times 10^{-17}$ & \checkmark \\
-0.0150  & 1265  & $5.0 \times 10^{-17}$ & \checkmark \\
-0.0190  & 997   & $4.9 \times 10^{-17}$ & \checkmark \\
-\textbf{0.0195}  & \textbf{971} & $4.9 \times 10^{-17}$ & \checkmark \\
-0.0199  & 2361  & $4.9 \times 10^{-19}$ & \checkmark \\
-\bottomrule
-\end{tabular}
-\end{table}
+% Auto-generated table for constant-step (ill-conditioned quadratic)
+\input{results/tables/Quadratic__ill_cond__κ_100_.tex}
 
 \paragraph{Вывод.} Оптимальный шаг вблизи $\alpha^* = \frac{2}{100+1} \approx 0.0198$.
 При $\alpha=0.0199$ (вблизи границы устойчивости $2/L=0.02$) итераций больше, чем при
@@ -483,24 +495,9 @@ $\varepsilon \in \{10^{-1}, \ldots, 10^{-8}\}$, $x_0=(2,2)$.
 
 \subsubsection{Хорошо обусловленная квадратика ($\kappa=1$)}
 
-\begin{table}[H]
-\centering
-\caption{Армихо и Вольфе на хорошо обусловленной квадратике.}
-\label{tab:linesearch_well}
-\begin{tabular}{lcccc}
-\toprule
-Метод & $\varepsilon$ & Итерации & $f$-вызовы & $\grad$-вызовы \\
-\midrule
-Армихо & $10^{-1}$ & 1 & 4 & 2 \\
-Армихо & $10^{-4}$ & 1 & 4 & 2 \\
-Армихо & $10^{-8}$ & 1 & 4 & 2 \\
-\midrule
-Вольфе & $10^{-1}$ & 1 & 4 & 3 \\
-Вольфе & $10^{-4}$ & 1 & 4 & 3 \\
-Вольфе & $10^{-8}$ & 1 & 4 & 3 \\
-\bottomrule
-\end{tabular}
-\end{table}
+% Table(s) generated automatically from CSV; include the LaTeX fragments
+\input{results/tables/Quadratic__well_cond__κ_1____Армихо.tex}
+\input{results/tables/Quadratic__well_cond__κ_1____Вольфе.tex}
 
 \paragraph{Вывод.} Оба метода находят точный минимум за \textbf{1 итерацию}
 независимо от $\varepsilon$. Линейный поиск выбирает шаг $\alpha=0.5$ — точный
@@ -508,38 +505,19 @@ $\varepsilon \in \{10^{-1}, \ldots, 10^{-8}\}$, $x_0=(2,2)$.
 
 \subsubsection{Плохо обусловленная квадратика ($\kappa=100$)}
 
-\begin{table}[H]
-\centering
-\caption{Армихо и Вольфе на плохо обусловленной квадратике.}
-\label{tab:linesearch_ill}
-\begin{tabular}{lccccc}
-\toprule
-Метод & $\varepsilon$ & Итерации & $f$-вызовы & $\grad$-вызовы & $f(x^*)$ \\
-\midrule
-Армихо & $10^{-1}$ & 148  & 1127  & 149 & $2.97\times10^{-3}$ \\
-Армихо & $10^{-2}$ & 256  & 1946  & 257 & $2.35\times10^{-5}$ \\
-Армихо & $10^{-4}$ & 458  & 3478  & 459 & $2.76\times10^{-9}$ \\
-Армихо & $10^{-6}$ & 667  & 5063  & 668 & $2.36\times10^{-13}$ \\
-Армихо & $10^{-8}$ & 869  & 6595  & 870 & $2.77\times10^{-17}$ \\
-\midrule
-Вольфе & $10^{-1}$ & \textbf{3} & \textbf{18} & \textbf{7} & 0 \\
-Вольфе & $10^{-8}$ & \textbf{3} & \textbf{18} & \textbf{7} & 0 \\
-\bottomrule
-\end{tabular}
-\end{table}
+% Table(s) generated automatically from CSV; include the LaTeX fragments
+\input{results/tables/Quadratic__ill_cond__κ_100____Армихо.tex}
+\input{results/tables/Quadratic__ill_cond__κ_100____Вольфе.tex}
 
-\paragraph{Вывод.} Разница между методами колоссальна:
-Армихо требует $\sim$870 итераций при $\eps=10^{-8}$,
-Вольфе — всего \textbf{3 итерации} при любом $\eps$.
-Условие кривизны в методе Вольфе выбирает шаг близкий к наискорейшему,
-что практически устраняет зигзагообразность на квадратиках.
+\paragraph{Вывод.} На плохо обусловленной квадратике при строгой точности оба метода требуют большого числа итераций (для примера, при $\eps=10^{-8}$ число итераций порядка нескольких сотен). Вольфе даёт схожие по качеству результаты со слегка иным профилем вычислений: условие кривизны требует вычисления градиента в пробных точках, поэтому в таблице видно, что число вызовов $\nabla f$ у Вольфе сопоставимо с числом вызовов $f$. При практическом применении это означает компромисс между более «устойчивым» выбором шага и увеличенной стоимостью вычисления градиентов.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{results/plots/fig_eps_ill.png}
     \caption{Зависимость числа итераций, вызовов $f$ и $\grad f$ от точности $\eps$
-    для плохо обусловленной квадратики.
-    Армихо (синий): линейный рост. Вольфе (оранжевый): константа~— 3 итерации.}
+    для плохо обусловленной квадратики. Армихо (синий): линейный рост числа итераций;
+    Вольфе (оранжевый): схожая зависимость по числу итераций, но поиск шага в Вольфе
+    требует большого числа вычислений градиента (см. столбцы "вызовы $\nabla f$").}
     \label{fig:eps_ill}
 \end{figure}
 
@@ -627,37 +605,10 @@ $\varepsilon \in \{10^{-1}, \ldots, 10^{-8}\}$, $x_0=(2,2)$.
 
 \subsubsection{Квадратичные функции — зависимость от точности}
 
-\begin{table}[H]
-\centering
-\caption{Наискорейший спуск: хорошо обусловленная квадратика ($\kappa=1$).}
-\label{tab:steepest_well}
-\begin{tabular}{lcccc}
-\toprule
-$\varepsilon$ & Итерации & $f$-вызовы & $\grad$-вызовы & $f(x^*)$ \\
-\midrule
-$10^{-1}$ & 1 & 1 & 2 & $3.94\times10^{-31}$ \\
-$10^{-4}$ & 1 & 1 & 2 & $3.94\times10^{-31}$ \\
-$10^{-8}$ & 1 & 1 & 2 & $3.94\times10^{-31}$ \\
-\bottomrule
-\end{tabular}
-\end{table}
+% Auto-generated steepest-descent tables
+\input{results/tables/Наискорейший_спуск__Quadratic__well_cond__κ_1_.tex}
 
-\begin{table}[H]
-\centering
-\caption{Наискорейший спуск: плохо обусловленная квадратика ($\kappa=100$).}
-\label{tab:steepest_ill}
-\begin{tabular}{lcccc}
-\toprule
-$\varepsilon$ & Итерации & $f$-вызовы & $\grad$-вызовы & $f(x^*)$ \\
-\midrule
-$10^{-1}$ & 3 & 1 & 4 & $1.85\times10^{-4}$ \\
-$10^{-2}$ & 5 & 1 & 6 & $1.74\times10^{-8}$ \\
-$10^{-4}$ & 7 & 1 & 8 & $1.64\times10^{-12}$ \\
-$10^{-6}$ & 9 & 1 & 10 & $1.54\times10^{-16}$ \\
-$10^{-8}$ & 11 & 1 & 12 & $1.45\times10^{-20}$ \\
-\bottomrule
-\end{tabular}
-\end{table}
+\input{results/tables/Наискорейший_спуск__Quadratic__ill_cond__κ_100_.tex}
 
 \paragraph{Вывод.}
 На $\kappa=1$ метод сходится за \textbf{1 итерацию} — аналитическая формула
@@ -667,7 +618,7 @@ $\alpha^* = \norm{g}^2/(g^\top A g)$ даёт точный минимум.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{results/plots/fig_eps_ill.png}
+    \includegraphics[width=\textwidth]{results/plots/fig_eps_steepest_ill.png}
     \caption{Зависимость числа итераций, вызовов $f$ и $\grad f$ от $\eps$
     для наискорейшего спуска на плохо обусловленной квадратике.}
     \label{fig:eps_steepest_ill}

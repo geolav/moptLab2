@@ -123,3 +123,46 @@ def print_table(headers, rows, title=""):
         w.writerow(headers)
         for r in rows:
             w.writerow([str(c) for c in r])
+    # Also write a LaTeX table fragment to include in the report
+    tex_path = tables_dir / f"{safe}.tex"
+    def _escape(s: str) -> str:
+        # minimal LaTeX escaping for common special characters
+        repl = {
+            "\\": r"\textbackslash{}",
+            "%": r"\%",
+            "$": r"\$",
+            "#": r"\#",
+            "_": r"\_",
+            "{": r"\{",
+            "}": r"\}",
+            "~": r"\textasciitilde{}",
+            "^": r"\textasciicircum{}",
+            "&": r"\&",
+            # common Greek and math symbols -> LaTeX math
+            "κ": r"$\kappa$",
+            "α": r"$\alpha$",
+            "ε": r"$\varepsilon$",
+            # check/cross symbols -> LaTeX commands
+            "✓": r"\checkmark",
+            "✗": r"$\times$",
+        }
+        for k, v in repl.items():
+            s = s.replace(k, v)
+        return s
+
+    with open(tex_path, "w", encoding="utf-8") as fp:
+        fp.write("\\begin{table}[H]\n")
+        fp.write("\\centering\n")
+        if title:
+            fp.write(f"\\caption{{{_escape(title)}}}\n")
+            fp.write(f"\\label{{tab:{safe}}}\n")
+        colspec = 'l' + ''.join('c' for _ in range(len(headers)-1))
+        fp.write(f"\\begin{{tabular}}{{{colspec}}}\n")
+        fp.write("\\toprule\n")
+        fp.write(' & '.join(_escape(str(h)) for h in headers) + " \\\\ \n")
+        fp.write("\\midrule\n")
+        for r in rows:
+            fp.write(' & '.join(_escape(str(c)) for c in r) + " \\\\ \n")
+        fp.write("\\bottomrule\n")
+        fp.write("\\end{tabular}\n")
+        fp.write("\\end{table}\n")
